@@ -104,7 +104,7 @@ func SyncPrograms() {
 						uninstall(uninstallCommand, program)
 					} else {
 						copyNewDependencies := newDependencies[pkgManagerName]
-						copyNewDependencies.Programs = remove(copyNewDependencies.Programs, programIndex)
+						copyNewDependencies.Programs = Remove(copyNewDependencies.Programs, programIndex)
 						newDependencies[pkgManagerName] = copyNewDependencies
 					}
 				}
