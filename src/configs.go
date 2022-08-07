@@ -13,7 +13,6 @@ const CachePath = "~/Library/Caches/Mac-sync"
 
 var (
 	DependencyCachePath = strings.Join([]string{CachePath, "local-dependency.yaml"}, "/")
-	ConfigCachePath     = strings.Join([]string{CachePath, "local-configs.yaml"}, "/")
 )
 
 type PackageManagerInfo struct {
@@ -37,26 +36,6 @@ func ReadDependencyCache() (map[string]PackageManagerInfo, error) {
 	}
 
 	var config map[string]PackageManagerInfo
-
-	if err := yaml.Unmarshal(dat, &config); err != nil {
-		panic(err)
-	}
-
-	return config, nil
-}
-
-func ReadConfigCache() (ConfigInfo, error) {
-	if _, err := os.Stat(ConfigCachePath); errors.Is(err, os.ErrNotExist) {
-		return ConfigInfo{}, err
-	}
-
-	dat, err := ioutil.ReadFile(ConfigCachePath)
-
-	if err != nil {
-		panic(err)
-	}
-
-	var config ConfigInfo
 
 	if err := yaml.Unmarshal(dat, &config); err != nil {
 		panic(err)
