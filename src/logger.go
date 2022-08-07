@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"github.com/fatih/color"
 )
@@ -20,23 +21,23 @@ func (logger loggerType) Log(msg string) {
 }
 
 func (logger loggerType) Success(msg string) {
-	Logger.Log(fmt.Sprintf("%s %s", color.GreenString("✔ "), msg))
+	Logger.Log(fmt.Sprintf("%s %s", color.GreenString("✔"), msg))
 }
 
 func (logger loggerType) Error(msg string) {
-	Logger.Log(fmt.Sprintf("%s %s", color.RedString("✖ "), msg))
+	Logger.Log(fmt.Sprintf("%s %s", color.RedString("✖"), msg))
 }
 
 func (logger loggerType) Info(msg string) {
-	Logger.Log(fmt.Sprintf("%s %s", color.BlueString("ℹ "), msg))
+	Logger.Log(fmt.Sprintf("%s %s", color.BlueString("ℹ"), msg))
 }
 
 func (logger loggerType) Warning(msg string) {
-	Logger.Log(fmt.Sprintf("%s %s", color.BlueString("⚠️ "), msg))
+	Logger.Log(fmt.Sprintf("%s %s", color.BlueString("⚠️"), msg))
 }
 
 func (logger loggerType) FileLogAppend(msg string) {
-	logFile.WriteString(msg)
+	logFile.WriteString(fmt.Sprintf("%s\n%s\n", msg, strings.Repeat("-", 90)))
 }
 
 func (logger loggerType) WriteFileLog() {

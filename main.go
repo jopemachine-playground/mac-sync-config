@@ -19,7 +19,7 @@ func main() {
 				Aliases: []string{"s"},
 				Usage:   "Sync configs",
 				Action: func(*cli.Context) error {
-					API.GetDependencies()
+					API.SyncPrograms()
 					return nil
 				},
 			},

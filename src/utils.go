@@ -1,6 +1,8 @@
 package src
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"os"
 	"os/exec"
@@ -41,7 +43,7 @@ func createMapSyncConfigRequest(fileName string) (*req.Response, error) {
 		Get("https://raw.githubusercontent.com/{userName}/{repoName}/{branchName}/{fileName}")
 }
 
-func GetDependencies() map[string]PackageManagerInfo {
+func FetchDependencies() map[string]PackageManagerInfo {
 	resp, err := createMapSyncConfigRequest("dependency.yaml")
 
 	if err != nil {
@@ -60,7 +62,7 @@ func GetDependencies() map[string]PackageManagerInfo {
 	panic(resp.Dump())
 }
 
-func GetConfigs() ConfigInfo {
+func FetchConfigs() ConfigInfo {
 	resp, err := createMapSyncConfigRequest("configs.yaml")
 
 	if err != nil {
@@ -77,4 +79,31 @@ func GetConfigs() ConfigInfo {
 	}
 
 	panic(resp.Dump())
+}
+
+// TODO: Replace below function with stdlib's one when it is merged
+// Ref: https://stackoverflow.com/questions/10485743/contains-method-for-a-slice
+func StringContains(slice []string, item string) bool {
+	set := make(map[string]struct{}, len(slice))
+	for _, s := range slice {
+		set[s] = struct{}{}
+	}
+
+	_, ok := set[item]
+	return ok
+}
+
+// Removes slice element at index(s) and returns new slice
+func remove[T any](slice []T, s int) []T {
+	return append(slice[:s], slice[s+1:]...)
+}
+
+func GetBytes(key interface{}) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(key)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }

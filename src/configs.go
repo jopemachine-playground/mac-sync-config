@@ -1,7 +1,9 @@
 package src
 
 import (
+	"errors"
 	"io/ioutil"
+	"os"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -24,9 +26,13 @@ type ConfigInfo struct {
 	ConfigPathsToSync []string `yaml:"sync"`
 }
 
-func ReadDependencyCache() interface{} {
+func ReadDependencyCache() (map[string]PackageManagerInfo, error) {
+	if _, err := os.Stat(DependencyCachePath); errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
+
 	dat, err := ioutil.ReadFile(DependencyCachePath)
-	if err != err {
+	if err != nil {
 		panic(err)
 	}
 
@@ -36,12 +42,17 @@ func ReadDependencyCache() interface{} {
 		panic(err)
 	}
 
-	return config
+	return config, nil
 }
 
-func ReadConfigCache() interface{} {
+func ReadConfigCache() (ConfigInfo, error) {
+	if _, err := os.Stat(ConfigCachePath); errors.Is(err, os.ErrNotExist) {
+		return ConfigInfo{}, err
+	}
+
 	dat, err := ioutil.ReadFile(ConfigCachePath)
-	if err != err {
+
+	if err != nil {
 		panic(err)
 	}
 
@@ -51,5 +62,20 @@ func ReadConfigCache() interface{} {
 		panic(err)
 	}
 
-	return config
+	return config, nil
+}
+
+func WriteDependencyCache(cache map[string]PackageManagerInfo) {
+	bytesToWrite, err := GetBytes(cache)
+	if err != nil {
+		panic(err)
+	}
+
+	if _, err := os.Stat(DependencyCachePath); !errors.Is(err, os.ErrNotExist) {
+		os.Remove(DependencyCachePath)
+	}
+
+	if writeErr := ioutil.WriteFile(DependencyCachePath, bytesToWrite, 0644); writeErr != nil {
+		panic(writeErr)
+	}
 }
