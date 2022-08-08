@@ -54,7 +54,7 @@ func CloneMacSyncConfigRepository() string {
 	return tempPath
 }
 
-func DownloadConfigs() error {
+func DownloadRemoteConfigs() error {
 	tempPath := CloneMacSyncConfigRepository()
 	configs, err := ReadConfig(fmt.Sprintf("%s/configs.yaml", tempPath))
 
@@ -87,7 +87,7 @@ func DownloadConfigs() error {
 	return nil
 }
 
-func UploadConfigs() {
+func UploadConfigFiles() {
 	tempPath := CloneMacSyncConfigRepository()
 	configs, err := ReadConfig(fmt.Sprintf("%s/configs.yaml", tempPath))
 

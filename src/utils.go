@@ -36,7 +36,7 @@ func CreateMacSyncConfigRequest(fileName string) (*req.Response, error) {
 		Get("https://raw.githubusercontent.com/{userName}/{repoName}/{branchName}/{fileName}")
 }
 
-func FetchDependencies() map[string]PackageManagerInfo {
+func FetchRemoveProgramInfo() map[string]PackageManagerInfo {
 	resp, err := CreateMacSyncConfigRequest("programs.yaml")
 
 	if err != nil {
@@ -45,25 +45,6 @@ func FetchDependencies() map[string]PackageManagerInfo {
 
 	if resp.IsSuccess() {
 		var result map[string]PackageManagerInfo
-		if err := yaml.Unmarshal(resp.Bytes(), &result); err != nil {
-			panic(err)
-		}
-
-		return result
-	}
-
-	panic(resp.Dump())
-}
-
-func FetchConfigs() ConfigInfo {
-	resp, err := CreateMacSyncConfigRequest("configs.yaml")
-
-	if err != nil {
-		panic(err)
-	}
-
-	if resp.IsSuccess() {
-		var result ConfigInfo
 		if err := yaml.Unmarshal(resp.Bytes(), &result); err != nil {
 			panic(err)
 		}

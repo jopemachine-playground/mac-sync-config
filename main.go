@@ -16,23 +16,23 @@ func main() {
 
 	app := &cli.App{
 		Name:  "mac-sync",
-		Usage: "Sync config files and programs between macs or accounts using Git.",
+		Usage: "Sync specified programs and config files between macs using Git.",
 		Commands: []*cli.Command{
 			{
 				Name:    "upload-configs",
 				Aliases: []string{"u"},
-				Usage:   "Upload local configs",
+				Usage:   "Upload local config files to remote",
 				Action: func(*cli.Context) error {
-					API.UploadConfigs()
+					API.UploadConfigFiles()
 					return nil
 				},
 			},
 			{
 				Name:    "download-configs",
 				Aliases: []string{"d"},
-				Usage:   "Download remote configs",
+				Usage:   "Download configs from remote",
 				Action: func(*cli.Context) error {
-					API.DownloadConfigs()
+					API.DownloadRemoteConfigs()
 					return nil
 				},
 			},

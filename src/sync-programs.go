@@ -73,7 +73,7 @@ func uninstall(uninstallCommand string, program string) {
 
 func SyncPrograms() {
 	localProgramCache := ReadLocalProgramCache()
-	newPrograms := FetchDependencies()
+	newPrograms := FetchRemoveProgramInfo()
 	updatedPrograms := map[string]PackageManagerInfo{}
 	maps.Copy(updatedPrograms, newPrograms)
 
@@ -102,9 +102,9 @@ func SyncPrograms() {
 					if !StringContains(newPrograms[pkgManagerName].Programs, program) {
 						uninstall(uninstallCommand, program)
 					} else {
-						copynewPrograms := newPrograms[pkgManagerName]
-						copynewPrograms.Programs = Remove(copynewPrograms.Programs, programIndex)
-						newPrograms[pkgManagerName] = copynewPrograms
+						copyNewPrograms := newPrograms[pkgManagerName]
+						copyNewPrograms.Programs = Remove(copyNewPrograms.Programs, programIndex)
+						newPrograms[pkgManagerName] = copyNewPrograms
 					}
 				}
 			}
