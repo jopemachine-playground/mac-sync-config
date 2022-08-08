@@ -3,8 +3,6 @@ package src
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"strings"
 
 	"github.com/fatih/color"
 )
@@ -38,16 +36,4 @@ func (logger loggerType) Warning(msg string) {
 
 func (logger loggerType) Question(msg string) {
 	Logger.Log(fmt.Sprintf("%s %s", color.GreenString("?"), msg))
-}
-
-func (logger loggerType) FileLogAppend(msg string) {
-	logFile.WriteString(fmt.Sprintf("%s%s\n", msg, strings.Repeat("-", 90)))
-}
-
-func (logger loggerType) WriteFileLog(logFilePath string) {
-	err := ioutil.WriteFile(logFilePath, logFile.Bytes(), 0777)
-
-	if err != nil {
-		panic(err)
-	}
 }

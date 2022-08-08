@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/imroc/req/v3"
 	"gopkg.in/yaml.v3"
 )
@@ -24,12 +25,16 @@ func GetGitUserId() string {
 	return strings.Split(fmt.Sprintf("%s", stdout), "@")[0]
 }
 
+func GetMacSyncConfigRepositoryName() string {
+	return "mac-sync-configs"
+}
+
 func CreateMacSyncConfigRequest(fileName string) (*req.Response, error) {
 	return req.C().R().
 		SetHeader("Authorization", fmt.Sprintf("token %s", PreferenceSingleton.GithubToken)).
 		SetHeader("Cache-control", "no-cache").
 		SetPathParam("userName", GetGitUserId()).
-		SetPathParam("repoName", "mac-sync-configs").
+		SetPathParam("repoName", GetMacSyncConfigRepositoryName()).
 		SetPathParam("branchName", "main").
 		SetPathParam("fileName", fileName).
 		EnableDump().
@@ -147,3 +152,5 @@ func HandleTildePath(path string) string {
 func IsRootUser() bool {
 	return os.Geteuid() == 0
 }
+
+var GrayColor = color.New(color.FgWhite, color.Faint)

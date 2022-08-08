@@ -39,7 +39,7 @@ func CloneMacSyncConfigRepository() string {
 
 	args := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/mac-sync-configs %s", GetGitUserId(), tempPath))
 	cmd := exec.Command(args[0], args[1:]...)
-	stdout, err := cmd.CombinedOutput()
+	_, err = cmd.CombinedOutput()
 	if err != nil {
 		panic(err)
 	}
@@ -50,7 +50,6 @@ func CloneMacSyncConfigRepository() string {
 		os.Mkdir(tempConfigDirPath, 0777)
 	}
 
-	Logger.Log(string(stdout))
 	return tempPath
 }
 
@@ -129,9 +128,10 @@ func UploadConfigFiles() {
 		panic(err)
 	}
 
-	gitCommitArgs := strings.Fields("git commit -m \"Config_files_updated\"")
+	gitCommitArgs := strings.Fields("git commit -m 🔧 -m updated_by_mac-sync")
 	gitCommitCmd := exec.Command(gitCommitArgs[0], gitCommitArgs[1:]...)
 	gitCommitCmd.Dir = tempPath
+
 	_, err = gitCommitCmd.CombinedOutput()
 	if err != nil {
 		panic(err)
@@ -145,7 +145,7 @@ func UploadConfigFiles() {
 		panic(err)
 	}
 
-	Logger.Success("🔧 Config files updated")
+	Logger.Info("🔧 Config files updated")
 
 	os.RemoveAll(tempPath)
 }

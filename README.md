@@ -44,7 +44,6 @@ Example:
 
 ```
 sync:
-  # macos configs
   - ~/Library/Preferences/com.apple.dock.plist
 ```
 

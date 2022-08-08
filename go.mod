@@ -5,7 +5,6 @@ go 1.18
 require gopkg.in/yaml.v3 v3.0.1
 
 require (
-	github.com/briandowns/spinner v1.19.0
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/fatih/color v1.13.0
