@@ -54,7 +54,7 @@ func CloneMacSyncConfigRepository() string {
 	return tempPath
 }
 
-func DownloadConfig() error {
+func DownloadConfigs() error {
 	tempPath := CloneMacSyncConfigRepository()
 	configs, err := ReadConfig(fmt.Sprintf("%s/configs.yaml", tempPath))
 
@@ -65,13 +65,18 @@ func DownloadConfig() error {
 	configPathsToSync := configs.ConfigPathsToSync
 
 	for _, configPathToSync := range configPathsToSync {
-		configPathToSync = HandleTildePath(configPathToSync)
 		hash := GetConfigHash(configPathToSync)
 
 		configDirPath := fmt.Sprintf("%s/configs/%s", tempPath, hash)
 		configZipFilePath := fmt.Sprintf("%s.tar.bz2", configDirPath)
+
+		if _, err := os.Stat(configZipFilePath); errors.Is(err, os.ErrNotExist) {
+			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"configs.yaml\", but the config file not found. Upload the config file before download", configPathToSync))
+			continue
+		}
+
 		DecompressConfigs(configZipFilePath)
-		os.Rename(fmt.Sprintf("%s/%s", configDirPath, hash), configPathToSync)
+		os.Rename(fmt.Sprintf("%s/%s", configDirPath, hash), HandleTildePath(configPathToSync))
 	}
 
 	if _, err := os.Stat(tempPath); errors.Is(err, os.ErrNotExist) {
@@ -90,55 +95,57 @@ func UploadConfigs() {
 		panic(err)
 	}
 
-	shouldUpdate := false
-
 	for _, configPathToSync := range configs.ConfigPathsToSync {
-		configPathToSync = HandleTildePath(configPathToSync)
-		dstFilePath := fmt.Sprintf("%s/configs/%s.tar.bz2", tempPath, GetConfigHash(configPathToSync))
+		hashId := GetConfigHash(configPathToSync)
+		dstFilePath := fmt.Sprintf("%s/configs/%s.tar.bz2", tempPath, hashId)
+		dstFilePathWithoutExt := strings.Split(dstFilePath, ".tar")[0]
 
+		// Update files if already exist
 		if _, err := os.Stat(dstFilePath); !errors.Is(err, os.ErrNotExist) {
+			err := os.Remove(dstFilePath)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		if _, err := os.Stat(HandleTildePath(configPathToSync)); errors.Is(err, os.ErrNotExist) {
+			Logger.Warning(fmt.Sprintf("\"%s\" file not found in the local", configPathToSync))
 			continue
 		}
 
-		configDirPath := fmt.Sprintf("%s/configs", tempPath)
-		if err != nil {
+		CompressConfigs(HandleTildePath(configPathToSync), dstFilePathWithoutExt)
+		if err := os.RemoveAll(dstFilePathWithoutExt); err != nil {
 			panic(err)
 		}
 
-		shouldUpdate = true
-		CompressConfigs(HandleTildePath(configPathToSync), configDirPath)
 		Logger.Success(fmt.Sprintf("\"%s\" file added.", configPathToSync))
 	}
 
-	if shouldUpdate {
-		gitAddArgs := strings.Fields(fmt.Sprintf("git add %s", tempPath))
-		gitAddCmd := exec.Command(gitAddArgs[0], gitAddArgs[1:]...)
-		gitAddCmd.Dir = tempPath
-		_, err = gitAddCmd.CombinedOutput()
-		if err != nil {
-			panic(err)
-		}
-
-		gitCommitArgs := strings.Fields("git commit -m \"Config_files_updated\"")
-		gitCommitCmd := exec.Command(gitCommitArgs[0], gitCommitArgs[1:]...)
-		gitCommitCmd.Dir = tempPath
-		_, err = gitCommitCmd.CombinedOutput()
-		if err != nil {
-			panic(err)
-		}
-
-		gitPushArgs := strings.Fields("git push -u origin main --force")
-		gitPushCmd := exec.Command(gitPushArgs[0], gitPushArgs[1:]...)
-		gitPushCmd.Dir = tempPath
-		_, err = gitPushCmd.CombinedOutput()
-		if err != nil {
-			panic(err)
-		}
-
-		Logger.Success("🔧 Config files updated")
-	} else {
-		Logger.Success("Everything up to dated")
+	gitAddArgs := strings.Fields(fmt.Sprintf("git add %s", tempPath))
+	gitAddCmd := exec.Command(gitAddArgs[0], gitAddArgs[1:]...)
+	gitAddCmd.Dir = tempPath
+	_, err = gitAddCmd.CombinedOutput()
+	if err != nil {
+		panic(err)
 	}
+
+	gitCommitArgs := strings.Fields("git commit -m \"Config_files_updated\"")
+	gitCommitCmd := exec.Command(gitCommitArgs[0], gitCommitArgs[1:]...)
+	gitCommitCmd.Dir = tempPath
+	_, err = gitCommitCmd.CombinedOutput()
+	if err != nil {
+		panic(err)
+	}
+
+	gitPushArgs := strings.Fields("git push -u origin main --force")
+	gitPushCmd := exec.Command(gitPushArgs[0], gitPushArgs[1:]...)
+	gitPushCmd.Dir = tempPath
+	_, err = gitPushCmd.CombinedOutput()
+	if err != nil {
+		panic(err)
+	}
+
+	Logger.Success("🔧 Config files updated")
 
 	os.RemoveAll(tempPath)
 }

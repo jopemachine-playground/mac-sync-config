@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"sort"
 
 	API "github.com/jopemachine/mac-sync/src"
 	"github.com/urfave/cli/v2"
@@ -12,30 +11,46 @@ import (
 func main() {
 	app := &cli.App{
 		Name:  "mac-sync",
-		Usage: "Sync configs and programs between macs or accounts.",
+		Usage: "Sync config files and programs between macs or accounts using Git.",
 		Commands: []*cli.Command{
 			{
-				Name:    "sync",
-				Aliases: []string{"s"},
-				Usage:   "Sync configs",
+				Name:    "upload-configs",
+				Aliases: []string{"u"},
+				Usage:   "Upload local configs",
 				Action: func(*cli.Context) error {
-					API.DownloadConfig()
+					API.UploadConfigs()
 					return nil
 				},
 			},
 			{
-				Name:    "edit",
-				Aliases: []string{"e"},
-				Usage:   "Edit config",
+				Name:    "download-configs",
+				Aliases: []string{"d"},
+				Usage:   "Download remote configs",
 				Action: func(*cli.Context) error {
+					API.DownloadConfigs()
+					return nil
+				},
+			},
+			{
+				Name:    "sync-programs",
+				Aliases: []string{"s"},
+				Usage:   "Sync programs with remote",
+				Action: func(*cli.Context) error {
+					API.SyncPrograms()
+					return nil
+				},
+			},
+			{
+				Name:    "clear-cache",
+				Aliases: []string{"c"},
+				Usage:   "Clear cache",
+				Action: func(*cli.Context) error {
+					API.ClearCache()
 					return nil
 				},
 			},
 		},
 	}
-
-	sort.Sort(cli.FlagsByName(app.Flags))
-	sort.Sort(cli.CommandsByName(app.Commands))
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)

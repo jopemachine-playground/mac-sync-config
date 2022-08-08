@@ -1,18 +1,18 @@
 # mac-sync
 
-Sync config files and program dependencies between macs or accounts using private Git repository.
+Sync config files and programs between macs or accounts using Git.
 
 ## How to set up
 
 1. Create `mac-sync-configs` as private repository in Github.
 
-2. Add `dependency.json5`, `config.json5` to the `main` branch of the repository.
+2. Add `program.yaml`, `configs.yaml` to the `main` branch of the repository.
 
 ## Configuration files
 
-### `dependency.json5`
+### `program.yaml`
 
-### `config.json5`
+### `configs.yaml`
 
 ## Usage
 

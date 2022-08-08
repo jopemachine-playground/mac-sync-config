@@ -1,9 +1,7 @@
 package src
 
 import (
-	"bytes"
 	"crypto/sha256"
-	"encoding/gob"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -48,7 +46,7 @@ func CreateMacSyncConfigRequest(fileName string) (*req.Response, error) {
 }
 
 func FetchDependencies() map[string]PackageManagerInfo {
-	resp, err := CreateMacSyncConfigRequest("dependency.yaml")
+	resp, err := CreateMacSyncConfigRequest("programs.yaml")
 
 	if err != nil {
 		panic(err)
@@ -102,36 +100,24 @@ func Remove[T any](slice []T, s int) []T {
 	return append(slice[:s], slice[s+1:]...)
 }
 
-func GetBytes(key interface{}) ([]byte, error) {
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	err := enc.Encode(key)
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
-
 func GetConfigHash(text string) string {
 	algorithm := sha256.New()
 	algorithm.Write([]byte(text))
 	return hex.EncodeToString(algorithm.Sum(nil))
 }
 
-func CompressConfigs(filepath string, dstDir string) string {
-	hashValue := GetConfigHash(filepath)
-	dstFilePath := fmt.Sprintf("%s/%s", dstDir, hashValue)
-
-	cpArgs := strings.Fields(fmt.Sprintf("cp -R %s %s", filepath, dstFilePath))
+func CompressConfigs(targetFilePath string, dstFilePath string) {
+	cpArgs := strings.Fields(fmt.Sprintf("cp -R %s %s", targetFilePath, dstFilePath))
 	cpCmd := exec.Command(cpArgs[0], cpArgs[1:]...)
 	_, err := cpCmd.CombinedOutput()
 	if err != nil {
 		panic(err)
 	}
 
+	hashValue := filepath.Base(dstFilePath)
 	tarArgs := strings.Fields(fmt.Sprintf("tar -cjf %s.tar %s", dstFilePath, hashValue))
 	tarCmd := exec.Command(tarArgs[0], tarArgs[1:]...)
-	tarCmd.Dir = dstDir
+	tarCmd.Dir = filepath.Dir(dstFilePath)
 	_, err = tarCmd.CombinedOutput()
 	if err != nil {
 		panic(err)
@@ -143,13 +129,6 @@ func CompressConfigs(filepath string, dstDir string) string {
 	if err != nil {
 		panic(err)
 	}
-
-	err = os.Remove(dstFilePath)
-	if err != nil {
-		panic(err)
-	}
-
-	return fmt.Sprintf("%s.tar.bz2", dstFilePath)
 }
 
 func DecompressConfigs(filepath string) string {
@@ -174,7 +153,6 @@ func DecompressConfigs(filepath string) string {
 		panic(err)
 	}
 
-	fmt.Println(configsDirPath)
 	return configsDirPath
 }
 

@@ -17,24 +17,20 @@ func executeCommand(command string, programName string) (string, error) {
 	cmd := exec.Command(args[0], args[1:]...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		Logger.FileLogAppend(fmt.Sprintf("%s\n%s", command, err.Error()))
+		Logger.FileLogAppend(fmt.Sprintf("✖ %s\n%s\n", command, err.Error()))
 		return string(output), err
 	}
 
-	Logger.FileLogAppend(fmt.Sprintf("%s\n%s", command, string(output)))
+	Logger.FileLogAppend(fmt.Sprintf("ℹ %s\n%s", command, string(output)))
 	return string(output), nil
 }
 
 func extractErrMsg(output string, err error) string {
-	var errMsg string
-
 	if strings.TrimSpace(output) == "" {
-		errMsg = err.Error()
+		return err.Error()
 	} else {
-		errMsg = output
+		return output
 	}
-
-	return errMsg
 }
 
 func install(installCommand string, program string, prefix string) {
@@ -72,61 +68,60 @@ func uninstall(uninstallCommand string, program string) {
 }
 
 func SyncPrograms() {
-	localDependencyCache, cacheFound := ReadDependencyCache()
-	newDependencies := FetchDependencies()
-	updatedDependencies := map[string]PackageManagerInfo{}
-	maps.Copy(updatedDependencies, newDependencies)
+	localProgramCache := ReadLocalProgramCache()
+	newPrograms := FetchDependencies()
+	updatedPrograms := map[string]PackageManagerInfo{}
+	maps.Copy(updatedPrograms, newPrograms)
 
 	// If some local items does not exist on new dependencies, delete them.
-	if cacheFound != nil {
-		localDependencyCacheKeys := make([]string, 0, len(localDependencyCache))
-		for k, _ := range localDependencyCache {
-			localDependencyCacheKeys = append(localDependencyCacheKeys, k)
+	if localProgramCache != nil {
+		localProgramCacheKeys := make([]string, 0, len(localProgramCache))
+		for k, _ := range localProgramCache {
+			localProgramCacheKeys = append(localProgramCacheKeys, k)
 		}
-		sort.Strings(localDependencyCacheKeys)
+		sort.Strings(localProgramCacheKeys)
 
-		for _, pkgManagerName := range localDependencyCacheKeys {
-			pkgManagerInfo := localDependencyCache[pkgManagerName]
+		for _, pkgManagerName := range localProgramCacheKeys {
+			pkgManagerInfo := localProgramCache[pkgManagerName]
 
 			// installCommand := pkgManagerInfo.InstallCommand
 			uninstallCommand := pkgManagerInfo.UninstallCommand
 			localInstalledPrograms := pkgManagerInfo.Programs
 
-			// TODO: Check and handle properly case changing install command here
 			// If pkgManager removed, remove all packages of the pkgManager
-			if _, found := newDependencies[pkgManagerName]; !found {
+			if _, found := newPrograms[pkgManagerName]; !found {
 				for _, program := range localInstalledPrograms {
 					uninstall(uninstallCommand, program)
 				}
 			} else {
 				for programIndex, program := range localInstalledPrograms {
-					if !StringContains(newDependencies[pkgManagerName].Programs, program) {
+					if !StringContains(newPrograms[pkgManagerName].Programs, program) {
 						uninstall(uninstallCommand, program)
 					} else {
-						copyNewDependencies := newDependencies[pkgManagerName]
-						copyNewDependencies.Programs = Remove(copyNewDependencies.Programs, programIndex)
-						newDependencies[pkgManagerName] = copyNewDependencies
+						copynewPrograms := newPrograms[pkgManagerName]
+						copynewPrograms.Programs = Remove(copynewPrograms.Programs, programIndex)
+						newPrograms[pkgManagerName] = copynewPrograms
 					}
 				}
 			}
 		}
 	}
 
-	newDependencyKeys := make([]string, 0, len(newDependencies))
-	for k, _ := range newDependencies {
-		newDependencyKeys = append(newDependencyKeys, k)
+	newProgramsKeys := make([]string, 0, len(newPrograms))
+	for k, _ := range newPrograms {
+		newProgramsKeys = append(newProgramsKeys, k)
 	}
-	sort.Strings(newDependencyKeys)
+	sort.Strings(newProgramsKeys)
 
 	currentIdx := 0
 	var totalCnt int
 
-	for _, pkgManagerName := range newDependencyKeys {
-		totalCnt += len(newDependencies[pkgManagerName].Programs)
+	for _, pkgManagerName := range newProgramsKeys {
+		totalCnt += len(newPrograms[pkgManagerName].Programs)
 	}
 
-	for _, pkgManagerName := range newDependencyKeys {
-		pkgManagerInfo := newDependencies[pkgManagerName]
+	for _, pkgManagerName := range newProgramsKeys {
+		pkgManagerInfo := newPrograms[pkgManagerName]
 
 		installCommand := pkgManagerInfo.InstallCommand
 		// uninstallCommand := pkgManagerInfo.UninstallCommand
@@ -138,5 +133,12 @@ func SyncPrograms() {
 		}
 	}
 
-	WriteDependencyCache(updatedDependencies)
+	if totalCnt == 0 {
+		Logger.Success("All programs up to dated.")
+	} else {
+		Logger.Success(fmt.Sprintf("%d programs updated.", totalCnt))
+	}
+
+	WriteLocalProgramCache(updatedPrograms)
+	Logger.WriteFileLog("./logs")
 }

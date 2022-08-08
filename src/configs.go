@@ -12,7 +12,7 @@ import (
 const CachePath = "~/Library/Caches/Mac-sync"
 
 var (
-	DependencyCachePath = strings.Join([]string{CachePath, "local-dependency.yaml"}, "/")
+	ProgramCachePath = strings.Join([]string{CachePath, "local-programs.yaml"}, "/")
 )
 
 type PackageManagerInfo struct {
@@ -25,12 +25,14 @@ type ConfigInfo struct {
 	ConfigPathsToSync []string `yaml:"sync"`
 }
 
-func ReadDependencyCache() (map[string]PackageManagerInfo, error) {
-	if _, err := os.Stat(DependencyCachePath); errors.Is(err, os.ErrNotExist) {
-		return nil, err
+func ReadLocalProgramCache() map[string]PackageManagerInfo {
+	programCachePath := HandleTildePath(ProgramCachePath)
+
+	if _, err := os.Stat(programCachePath); errors.Is(err, os.ErrNotExist) {
+		return nil
 	}
 
-	dat, err := ioutil.ReadFile(DependencyCachePath)
+	dat, err := ioutil.ReadFile(programCachePath)
 	if err != nil {
 		panic(err)
 	}
@@ -41,20 +43,33 @@ func ReadDependencyCache() (map[string]PackageManagerInfo, error) {
 		panic(err)
 	}
 
-	return config, nil
+	return config
 }
 
-func WriteDependencyCache(cache map[string]PackageManagerInfo) {
-	bytesToWrite, err := GetBytes(cache)
+func WriteLocalProgramCache(cache map[string]PackageManagerInfo) {
+	cacheDir := HandleTildePath(CachePath)
+	programCachePath := HandleTildePath(ProgramCachePath)
+
+	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(cacheDir, 0777)
+		if err != nil {
+			panic(err)
+		}
+	} else if _, err := os.Stat(programCachePath); !errors.Is(err, os.ErrNotExist) {
+		os.Remove(programCachePath)
+	}
+
+	bytesToWrite, err := yaml.Marshal(cache)
 	if err != nil {
 		panic(err)
 	}
 
-	if _, err := os.Stat(DependencyCachePath); !errors.Is(err, os.ErrNotExist) {
-		os.Remove(DependencyCachePath)
+	if err := ioutil.WriteFile(programCachePath, bytesToWrite, 0777); err != nil {
+		panic(err)
 	}
+}
 
-	if writeErr := ioutil.WriteFile(DependencyCachePath, bytesToWrite, 0644); writeErr != nil {
-		panic(writeErr)
-	}
+func ClearCache() {
+	programCachePath := HandleTildePath(ProgramCachePath)
+	os.Remove(programCachePath)
 }

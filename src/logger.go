@@ -33,15 +33,19 @@ func (logger loggerType) Info(msg string) {
 }
 
 func (logger loggerType) Warning(msg string) {
-	Logger.Log(fmt.Sprintf("%s %s", color.BlueString("⚠️"), msg))
+	Logger.Log(fmt.Sprintf("%s %s", color.YellowString("⚠️"), msg))
+}
+
+func (logger loggerType) Question(msg string) {
+	Logger.Log(fmt.Sprintf("%s %s", color.GreenString("?"), msg))
 }
 
 func (logger loggerType) FileLogAppend(msg string) {
-	logFile.WriteString(fmt.Sprintf("%s\n%s\n", msg, strings.Repeat("-", 90)))
+	logFile.WriteString(fmt.Sprintf("%s%s\n", msg, strings.Repeat("-", 90)))
 }
 
-func (logger loggerType) WriteFileLog() {
-	err := ioutil.WriteFile("/logs", logFile.Bytes(), 0644)
+func (logger loggerType) WriteFileLog(logFilePath string) {
+	err := ioutil.WriteFile(logFilePath, logFile.Bytes(), 0777)
 
 	if err != nil {
 		panic(err)
