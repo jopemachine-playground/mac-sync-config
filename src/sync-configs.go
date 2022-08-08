@@ -37,7 +37,7 @@ func CloneMacSyncConfigRepository() string {
 		panic(err)
 	}
 
-	args := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/mac-sync-configs %s", GetUserName(), tempPath))
+	args := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/mac-sync-configs %s", GetGitUserId(), tempPath))
 	cmd := exec.Command(args[0], args[1:]...)
 	stdout, err := cmd.CombinedOutput()
 	if err != nil {

@@ -11,11 +11,10 @@ import (
 	"strings"
 
 	"github.com/imroc/req/v3"
-	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 )
 
-func GetUserName() string {
+func GetGitUserId() string {
 	args := strings.Fields("git config --global user.email")
 	cmd := exec.Command(args[0], args[1:]...)
 	stdout, err := cmd.CombinedOutput()
@@ -25,19 +24,11 @@ func GetUserName() string {
 	return strings.Split(fmt.Sprintf("%s", stdout), "@")[0]
 }
 
-func GetGithubToken() string {
-	err := godotenv.Load()
-	if err != nil {
-		panic("Error loading .env file")
-	}
-
-	return os.Getenv("gh_token")
-}
-
 func CreateMacSyncConfigRequest(fileName string) (*req.Response, error) {
 	return req.C().R().
-		SetHeader("Authorization", fmt.Sprintf("token %s", GetGithubToken())).
-		SetPathParam("userName", GetUserName()).
+		SetHeader("Authorization", fmt.Sprintf("token %s", PreferenceSingleton.GithubToken)).
+		SetHeader("Cache-control", "no-cache").
+		SetPathParam("userName", GetGitUserId()).
 		SetPathParam("repoName", "mac-sync-configs").
 		SetPathParam("branchName", "main").
 		SetPathParam("fileName", fileName).
@@ -170,4 +161,8 @@ func HandleTildePath(path string) string {
 	}
 
 	return path
+}
+
+func IsRootUser() bool {
+	return os.Geteuid() == 0
 }

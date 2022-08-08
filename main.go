@@ -9,6 +9,11 @@ import (
 )
 
 func main() {
+	if API.IsRootUser() {
+		API.Logger.Error("Running mac-sync as root is not allowed.\nIf you want to install some programs as root, prepend 'sudo' into the install command.")
+		os.Exit(1)
+	}
+
 	app := &cli.App{
 		Name:  "mac-sync",
 		Usage: "Sync config files and programs between macs or accounts using Git.",

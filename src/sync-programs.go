@@ -15,6 +15,10 @@ import (
 func executeCommand(command string, programName string) (string, error) {
 	args := strings.Fields(strings.ReplaceAll(command, "{program}", programName))
 	cmd := exec.Command(args[0], args[1:]...)
+	if args[0] == "sudo" {
+		cmd.Stdin = strings.NewReader(PreferenceSingleton.UserPassword)
+	}
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		Logger.FileLogAppend(fmt.Sprintf("✖ %s\n%s\n", command, err.Error()))
