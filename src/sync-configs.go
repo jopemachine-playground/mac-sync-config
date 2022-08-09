@@ -88,6 +88,7 @@ func CloneMacSyncConfigRepository() string {
 		panic(err)
 	}
 
+	// Should fully clone repository for commit and push
 	args := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/%s %s", GetGitUserId(), GetMacSyncConfigRepositoryName(), tempPath))
 	cmd := exec.Command(args[0], args[1:]...)
 	_, err = cmd.CombinedOutput()
@@ -95,7 +96,7 @@ func CloneMacSyncConfigRepository() string {
 		panic(err)
 	}
 
-	tempConfigDirPath := fmt.Sprintf("%s/%s", tempPath, "configs")
+	tempConfigDirPath := fmt.Sprintf("%s/%s", tempPath, "mac-sync-configs")
 
 	if _, err := os.Stat(tempConfigDirPath); errors.Is(err, os.ErrNotExist) {
 		os.Mkdir(tempConfigDirPath, os.ModePerm)
@@ -125,7 +126,7 @@ func DownloadRemoteConfigs() error {
 	for _, configPathToSync := range configPathsToSync {
 		hash := GetConfigHash(configPathToSync)
 
-		configDirPath := fmt.Sprintf("%s/configs/%s", tempPath, hash)
+		configDirPath := fmt.Sprintf("%s/mac-sync-configs/%s", tempPath, hash)
 		configZipFilePath := fmt.Sprintf("%s.tar.bz2", configDirPath)
 
 		if _, err := os.Stat(configZipFilePath); errors.Is(err, os.ErrNotExist) {
@@ -158,7 +159,7 @@ func UploadConfigFiles() {
 
 	for _, configPathToSync := range configs.ConfigPathsToSync {
 		hashId := GetConfigHash(configPathToSync)
-		dstFilePath := fmt.Sprintf("%s/configs/%s.tar.bz2", tempPath, hashId)
+		dstFilePath := fmt.Sprintf("%s/mac-sync-configs/%s.tar.bz2", tempPath, hashId)
 		dstFilePathWithoutExt := strings.Split(dstFilePath, ".tar")[0]
 
 		// Update files if already exist

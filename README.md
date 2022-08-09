@@ -45,7 +45,7 @@ npm:
 
 ### `mac-sync-configs.yaml`
 
-Below example upload the config file to `configs` folder of the repository.
+Below example upload specified config files to `mac-sync-configs` folder of the repository.
 
 Example:
 
@@ -76,4 +76,4 @@ GLOBAL OPTIONS:
 
 ## Example
 
-- [mac-sync-configs](https://github.com/jopemachine/mac-sync-configs)
+- [dotfiles-macos](https://github.com/jopemachine/dotfiles-macos) - my config files
