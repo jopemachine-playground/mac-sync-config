@@ -114,7 +114,7 @@ func DownloadRemoteConfigs() error {
 	}
 
 	tempPath := CloneMacSyncConfigRepository()
-	configs, err := ReadConfig(fmt.Sprintf("%s/configs.yaml", tempPath))
+	configs, err := ReadConfig(fmt.Sprintf("%s/mac-sync-configs.yaml", tempPath))
 
 	if err != nil {
 		panic(err)
@@ -129,7 +129,7 @@ func DownloadRemoteConfigs() error {
 		configZipFilePath := fmt.Sprintf("%s.tar.bz2", configDirPath)
 
 		if _, err := os.Stat(configZipFilePath); errors.Is(err, os.ErrNotExist) {
-			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"configs.yaml\", but the config file not found. Upload the config file before download", configPathToSync))
+			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"mac-sync-configs.yaml\", but the config file not found. Upload the config file before download", configPathToSync))
 			continue
 		}
 
@@ -150,7 +150,7 @@ func DownloadRemoteConfigs() error {
 
 func UploadConfigFiles() {
 	tempPath := CloneMacSyncConfigRepository()
-	configs, err := ReadConfig(fmt.Sprintf("%s/configs.yaml", tempPath))
+	configs, err := ReadConfig(fmt.Sprintf("%s/mac-sync-configs.yaml", tempPath))
 
 	if err != nil {
 		panic(err)

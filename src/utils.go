@@ -42,7 +42,7 @@ func CreateMacSyncConfigRequest(fileName string) (*req.Response, error) {
 }
 
 func FetchRemoveProgramInfo() map[string]PackageManagerInfo {
-	resp, err := CreateMacSyncConfigRequest("programs.yaml")
+	resp, err := CreateMacSyncConfigRequest("mac-sync-programs.yaml")
 
 	if err != nil {
 		panic(err)

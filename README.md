@@ -10,7 +10,7 @@ Sync specified programs and config files between macs using Git with ease.
 
 1. Create a private repository for `mac-sync` in Github.
 
-2. Add `programs.yaml`, `configs.yaml` to the `main` branch of the repository.
+2. Add `mac-sync-programs.yaml`, `mac-sync-configs.yaml` to the `main` branch of the repository.
 
 3. Run `mac-sync upload-configs` to upload configuration files to the repository. You need to enter some information when you first try it.
 
@@ -20,7 +20,7 @@ Sync specified programs and config files between macs using Git with ease.
 
 ## Configuration files
 
-### `programs.yaml`
+### `mac-sync-programs.yaml`
 
 Below example will run `homebrew install` and `npm install` command with the specified programs when enter `mac-sync sync-programs`.
 
@@ -43,7 +43,7 @@ npm:
     - n
 ```
 
-### `configs.yaml`
+### `mac-sync-configs.yaml`
 
 Below example upload the config file to `configs` folder of the repository.
 
