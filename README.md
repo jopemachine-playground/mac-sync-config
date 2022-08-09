@@ -1,6 +1,6 @@
 # mac-sync
 
-Sync specified programs and config files between macs using Git for ease.
+Sync specified programs and config files between macs using Git with ease.
 
 ## Prerequisite
 
@@ -16,9 +16,13 @@ Sync specified programs and config files between macs using Git for ease.
 
 4. In another mac, run `mac-sync download-configs` to download configuration files from the repository.
 
+5. Run `mac-sync sync-programs` to download all programs.
+
 ## Configuration files
 
 ### `programs.yaml`
+
+Below example will run `homebrew install` and `npm install` command with the specified programs when enter `mac-sync sync-programs`.
 
 Example:
 
@@ -27,16 +31,21 @@ homebrew:
   install: brew install {program}
   uninstall: brew uninstall {program}
   programs:
+    - deno
     - python3
 
 npm:
   install: npm i -g {program}
   uninstall: npm rm -g {program}
   programs:
+    - fast-cli
     - ts-node
+    - n
 ```
 
 ### `configs.yaml`
+
+Below example upload the config file to `configs` folder of the repository.
 
 Example:
 

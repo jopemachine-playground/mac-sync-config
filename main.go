@@ -16,7 +16,7 @@ func main() {
 
 	app := &cli.App{
 		Name:  "mac-sync",
-		Usage: "Sync specified programs and config files between macs using Git for ease.",
+		Usage: "Sync specified programs and config files between macs using Git with ease.",
 		Commands: []*cli.Command{
 			{
 				Name:    "upload-configs",
