@@ -18,7 +18,7 @@ const PreferencePath = "~/Library/Preferences/Mac-sync"
 var (
 	ProgramCachePath               = strings.Join([]string{CachePath, "local-programs.yaml"}, "/")
 	ConfigFileLastChangedCachePath = strings.Join([]string{CachePath, "last-changed.json"}, "/")
-	PreferenceFilePath             = strings.Join([]string{PreferencePath, "configs.json"}, "/")
+	PreferenceFilePath             = strings.Join([]string{PreferencePath, "preference.json"}, "/")
 )
 
 type PackageManagerInfo struct {
@@ -79,7 +79,7 @@ func ReadPreference() Preference {
 		}
 
 		os.WriteFile(preferenceFilePath, bytesToWrite, os.ModePerm)
-		Logger.Success(fmt.Sprintf("Preference file saved successfully on the '%s'", preferenceFilePath))
+		Logger.Success(fmt.Sprintf("Preference file is saved successfully on the '%s'", preferenceFilePath))
 	} else {
 		dat, err := ioutil.ReadFile(preferenceFilePath)
 		if err != nil {
