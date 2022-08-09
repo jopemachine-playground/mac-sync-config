@@ -16,8 +16,9 @@ const CachePath = "~/Library/Caches/Mac-sync"
 const PreferencePath = "~/Library/Preferences/Mac-sync"
 
 var (
-	ProgramCachePath   = strings.Join([]string{CachePath, "local-programs.yaml"}, "/")
-	PreferenceFilePath = strings.Join([]string{PreferencePath, "configs.json"}, "/")
+	ProgramCachePath               = strings.Join([]string{CachePath, "local-programs.yaml"}, "/")
+	ConfigFileLastChangedCachePath = strings.Join([]string{CachePath, "last-changed.json"}, "/")
+	PreferenceFilePath             = strings.Join([]string{PreferencePath, "configs.json"}, "/")
 )
 
 type PackageManagerInfo struct {
@@ -103,6 +104,50 @@ func ReadLocalProgramCache() map[string]PackageManagerInfo {
 	return config
 }
 
+func ReadConfigFileLastChanged() map[string]string {
+	configFileLastChangedCachePath := HandleTildePath(ConfigFileLastChangedCachePath)
+
+	if _, err := os.Stat(configFileLastChangedCachePath); errors.Is(err, os.ErrNotExist) {
+		return make(map[string]string)
+	}
+
+	dat, err := ioutil.ReadFile(configFileLastChangedCachePath)
+	if err != nil {
+		panic(err)
+	}
+
+	var lastChangedMap map[string]string
+
+	if err := json.Unmarshal(dat, &lastChangedMap); err != nil {
+		panic(err)
+	}
+
+	return lastChangedMap
+}
+
+func WriteConfigFileLastChanged(lastChanged map[string]string) {
+	cacheDir := HandleTildePath(CachePath)
+	configFileLastChangedCachePath := HandleTildePath(ConfigFileLastChangedCachePath)
+
+	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(cacheDir, 0777)
+		if err != nil {
+			panic(err)
+		}
+	} else if _, err := os.Stat(configFileLastChangedCachePath); !errors.Is(err, os.ErrNotExist) {
+		os.Remove(configFileLastChangedCachePath)
+	}
+
+	bytesToWrite, err := json.Marshal(lastChanged)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := ioutil.WriteFile(configFileLastChangedCachePath, bytesToWrite, 0777); err != nil {
+		panic(err)
+	}
+}
+
 func WriteLocalProgramCache(cache map[string]PackageManagerInfo) {
 	cacheDir := HandleTildePath(CachePath)
 	programCachePath := HandleTildePath(ProgramCachePath)
@@ -128,6 +173,8 @@ func WriteLocalProgramCache(cache map[string]PackageManagerInfo) {
 
 func ClearCache() {
 	programCachePath := HandleTildePath(ProgramCachePath)
+	configFileLastChangedCachePath := HandleTildePath(ConfigFileLastChangedCachePath)
 	os.Remove(programCachePath)
+	os.Remove(configFileLastChangedCachePath)
 	Logger.Success("Cache file cleared")
 }

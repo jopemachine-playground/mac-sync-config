@@ -1,8 +1,6 @@
 # mac-sync
 
-Sync specified programs and config files between macs using Git.
-
-If you want to backup your whole mac os system, use [Time Machine](https://support.apple.com/en-us/HT201250) instead.
+Sync specified programs and config files between macs using Git for ease.
 
 ## Prerequisite
 
