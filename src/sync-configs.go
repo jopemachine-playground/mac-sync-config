@@ -48,7 +48,7 @@ func DecompressConfigs(filepath string) string {
 	tarFilePath := strings.Split(filepath, ".bz2")[0]
 	configsDirPath := strings.Split(tarFilePath, ".tar")[0]
 
-	if err = os.Mkdir(configsDirPath, 0777); err != nil {
+	if err = os.Mkdir(configsDirPath, os.ModePerm); err != nil {
 		panic(err)
 	}
 
@@ -88,7 +88,7 @@ func CloneMacSyncConfigRepository() string {
 		panic(err)
 	}
 
-	args := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/mac-sync-configs %s", GetGitUserId(), tempPath))
+	args := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/%s %s", GetGitUserId(), GetMacSyncConfigRepositoryName(), tempPath))
 	cmd := exec.Command(args[0], args[1:]...)
 	_, err = cmd.CombinedOutput()
 	if err != nil {
@@ -98,7 +98,7 @@ func CloneMacSyncConfigRepository() string {
 	tempConfigDirPath := fmt.Sprintf("%s/%s", tempPath, "configs")
 
 	if _, err := os.Stat(tempConfigDirPath); errors.Is(err, os.ErrNotExist) {
-		os.Mkdir(tempConfigDirPath, 0777)
+		os.Mkdir(tempConfigDirPath, os.ModePerm)
 	}
 
 	return tempPath
@@ -138,7 +138,7 @@ func DownloadRemoteConfigs() error {
 	}
 
 	if _, err := os.Stat(tempPath); errors.Is(err, os.ErrNotExist) {
-		os.Mkdir(tempPath, 0777)
+		os.Mkdir(tempPath, os.ModePerm)
 	}
 
 	configFileLastChanged["remote-commit-hash-id"] = remoteCommitHashId
@@ -212,7 +212,7 @@ func UploadConfigFiles() {
 }
 
 func FetchRemoteConfigCommitHashId() string {
-	args := strings.Fields(fmt.Sprintf("git ls-remote https://github.com/%s/mac-sync-configs HEAD", GetGitUserId()))
+	args := strings.Fields(fmt.Sprintf("git ls-remote https://github.com/%s/%s HEAD", GetGitUserId(), GetMacSyncConfigRepositoryName()))
 	cmd := exec.Command(args[0], args[1:]...)
 	stdout, err := cmd.CombinedOutput()
 	if err != nil {

@@ -32,8 +32,9 @@ type ConfigInfo struct {
 }
 
 type Preference struct {
-	GithubToken  string `json:"github_token"`
-	UserPassword string `json:"user_password"`
+	GithubToken                    string `json:"github_token"`
+	UserPassword                   string `json:"user_password"`
+	MacSyncConfigGitRepositoryName string `json:"mac_sync_config_git_repository_name"`
 }
 
 var (
@@ -48,7 +49,7 @@ func ReadPreference() Preference {
 
 	// If not exist, create new preference config file
 	if _, err := os.Stat(preferenceFilePath); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(preferenceDirPath, 0777)
+		err := os.Mkdir(preferenceDirPath, os.ModePerm)
 		if err != nil && !errors.Is(err, os.ErrExist) {
 			panic(err)
 		}
@@ -63,12 +64,17 @@ func ReadPreference() Preference {
 		password.Scan()
 		config.UserPassword = password.Text()
 
+		Logger.Info("Enter a Git repository name for storing mac-sync's configuration files:")
+		repoName := bufio.NewScanner(os.Stdin)
+		repoName.Scan()
+		config.MacSyncConfigGitRepositoryName = repoName.Text()
+
 		bytesToWrite, err := json.Marshal(config)
 		if err != nil {
 			panic(err)
 		}
 
-		os.WriteFile(preferenceFilePath, bytesToWrite, 0777)
+		os.WriteFile(preferenceFilePath, bytesToWrite, os.ModePerm)
 		Logger.Success(fmt.Sprintf("Preference file saved successfully on the '%s'", preferenceFilePath))
 	} else {
 		dat, err := ioutil.ReadFile(preferenceFilePath)
@@ -130,7 +136,7 @@ func WriteConfigFileLastChanged(lastChanged map[string]string) {
 	configFileLastChangedCachePath := HandleTildePath(ConfigFileLastChangedCachePath)
 
 	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(cacheDir, 0777)
+		err := os.Mkdir(cacheDir, os.ModePerm)
 		if err != nil {
 			panic(err)
 		}
@@ -143,7 +149,7 @@ func WriteConfigFileLastChanged(lastChanged map[string]string) {
 		panic(err)
 	}
 
-	if err := ioutil.WriteFile(configFileLastChangedCachePath, bytesToWrite, 0777); err != nil {
+	if err := ioutil.WriteFile(configFileLastChangedCachePath, bytesToWrite, os.ModePerm); err != nil {
 		panic(err)
 	}
 }
@@ -153,7 +159,7 @@ func WriteLocalProgramCache(cache map[string]PackageManagerInfo) {
 	programCachePath := HandleTildePath(ProgramCachePath)
 
 	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(cacheDir, 0777)
+		err := os.Mkdir(cacheDir, os.ModePerm)
 		if err != nil {
 			panic(err)
 		}
@@ -166,7 +172,7 @@ func WriteLocalProgramCache(cache map[string]PackageManagerInfo) {
 		panic(err)
 	}
 
-	if err := ioutil.WriteFile(programCachePath, bytesToWrite, 0777); err != nil {
+	if err := ioutil.WriteFile(programCachePath, bytesToWrite, os.ModePerm); err != nil {
 		panic(err)
 	}
 }

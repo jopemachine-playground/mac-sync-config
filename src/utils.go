@@ -26,7 +26,7 @@ func GetGitUserId() string {
 }
 
 func GetMacSyncConfigRepositoryName() string {
-	return "mac-sync-configs"
+	return PreferenceSingleton.MacSyncConfigGitRepositoryName
 }
 
 func CreateMacSyncConfigRequest(fileName string) (*req.Response, error) {

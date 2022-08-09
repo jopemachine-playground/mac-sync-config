@@ -8,11 +8,11 @@ Sync specified programs and config files between macs using Git with ease.
 
 ## How to set up
 
-1. Create private repository named `mac-sync-configs` in Github.
+1. Create a private repository for `mac-sync` in Github.
 
 2. Add `programs.yaml`, `configs.yaml` to the `main` branch of the repository.
 
-3. Run `mac-sync upload-configs` to upload configuration files to the repository.
+3. Run `mac-sync upload-configs` to upload configuration files to the repository. You need to enter some information when you first try it.
 
 4. In another mac, run `mac-sync download-configs` to download configuration files from the repository.
 
@@ -61,7 +61,7 @@ NAME:
    mac-sync - Sync specified programs and config files between macs using Git.
 
 USAGE:
-   mac-sync [global options] command [command options] [arguments...]
+   mac-sync [global options] command
 
 COMMANDS:
    upload-configs, u    Upload local config files to remote
