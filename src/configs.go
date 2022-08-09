@@ -41,6 +41,23 @@ var (
 	PreferenceSingleton = ReadPreference()
 )
 
+func scanPreference(config *Preference) {
+	Logger.Question("Enter your Github token:")
+	ghToken := bufio.NewScanner(os.Stdin)
+	ghToken.Scan()
+	config.GithubToken = ghToken.Text()
+
+	Logger.Question("Enter your User account's password:")
+	password := bufio.NewScanner(os.Stdin)
+	password.Scan()
+	config.UserPassword = password.Text()
+
+	Logger.Question("Enter a Git repository name for storing mac-sync's configuration files:")
+	repoName := bufio.NewScanner(os.Stdin)
+	repoName.Scan()
+	config.MacSyncConfigGitRepositoryName = repoName.Text()
+}
+
 func ReadPreference() Preference {
 	preferenceDirPath := HandleTildePath(PreferencePath)
 	preferenceFilePath := HandleTildePath(PreferenceFilePath)
@@ -54,20 +71,7 @@ func ReadPreference() Preference {
 			panic(err)
 		}
 
-		Logger.Info("Enter your Github token:")
-		ghToken := bufio.NewScanner(os.Stdin)
-		ghToken.Scan()
-		config.GithubToken = ghToken.Text()
-
-		Logger.Info("Enter your User account's password:")
-		password := bufio.NewScanner(os.Stdin)
-		password.Scan()
-		config.UserPassword = password.Text()
-
-		Logger.Info("Enter a Git repository name for storing mac-sync's configuration files:")
-		repoName := bufio.NewScanner(os.Stdin)
-		repoName.Scan()
-		config.MacSyncConfigGitRepositoryName = repoName.Text()
+		scanPreference(&config)
 
 		bytesToWrite, err := json.Marshal(config)
 		if err != nil {
