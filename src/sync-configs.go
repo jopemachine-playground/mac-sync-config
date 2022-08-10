@@ -135,7 +135,18 @@ func DownloadRemoteConfigs() error {
 		}
 
 		DecompressConfigs(configZipFilePath)
-		os.Rename(fmt.Sprintf("%s/%s", configDirPath, hash), HandleTildePath(configPathToSync))
+		srcPath := fmt.Sprintf("%s/%s", configDirPath, hash)
+		dstPath := HandleTildePath(configPathToSync)
+		dirPath := filepath.Dir(dstPath)
+
+		mkdirArgs := strings.Fields(fmt.Sprintf("mkdir -p %s", dirPath))
+		mkdirCmd := exec.Command(mkdirArgs[0], mkdirArgs[1:]...)
+		_, err := mkdirCmd.CombinedOutput()
+		if err != nil {
+			panic(err)
+		}
+
+		os.Rename(srcPath, dstPath)
 	}
 
 	if _, err := os.Stat(tempPath); errors.Is(err, os.ErrNotExist) {

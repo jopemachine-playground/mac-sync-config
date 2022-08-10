@@ -6,8 +6,6 @@ import (
 	"os/exec"
 	"sort"
 	"strings"
-
-	"github.com/fatih/color"
 )
 
 func executeCommand(command string, programName string) error {
@@ -39,7 +37,7 @@ func extractErrMsg(output string, err error) string {
 
 func install(command string, program string, progress string) {
 	command = strings.ReplaceAll(command, "{program}", program)
-	Logger.Log(color.New(color.FgWhite, color.Bold).Sprintf("%s Installing \"%s\"... %s", GrayColor.Sprint(progress), program, GrayColor.Sprintf("(%s)", command)))
+	Logger.Log(fmt.Sprintf("%s Installing \"%s\"... %s", fmt.Sprint(progress), program, fmt.Sprintf("(%s)", command)))
 
 	executeCommand(command, program)
 	Logger.Log("")
@@ -47,7 +45,7 @@ func install(command string, program string, progress string) {
 
 func uninstall(command string, program string) {
 	command = strings.ReplaceAll(command, "{program}", program)
-	Logger.Log(color.New(color.FgWhite, color.Bold).Sprintf("\"%s\" is uninstalled from remote. Uninstalling \"%s\"...", program, program))
+	Logger.Log(fmt.Sprintf("\"%s\" is uninstalled from remote. Uninstalling \"%s\"...", program, program))
 
 	executeCommand(command, program)
 	Logger.Log("")

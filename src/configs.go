@@ -32,6 +32,7 @@ type ConfigInfo struct {
 }
 
 type Preference struct {
+	GithubId                       string `json:"github_id"`
 	GithubToken                    string `json:"github_token"`
 	UserPassword                   string `json:"user_password"`
 	MacSyncConfigGitRepositoryName string `json:"mac_sync_config_git_repository_name"`
@@ -42,6 +43,11 @@ var (
 )
 
 func scanPreference(config *Preference) {
+	Logger.Question("Enter your Github id:")
+	ghId := bufio.NewScanner(os.Stdin)
+	ghId.Scan()
+	config.GithubId = ghId.Text()
+
 	Logger.Question("Enter your Github token:")
 	ghToken := bufio.NewScanner(os.Stdin)
 	ghToken.Scan()

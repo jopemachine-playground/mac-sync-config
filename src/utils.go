@@ -5,24 +5,16 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
-	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/imroc/req/v3"
 	"gopkg.in/yaml.v3"
 )
 
 func GetGitUserId() string {
-	args := strings.Fields("git config --global user.email")
-	cmd := exec.Command(args[0], args[1:]...)
-	stdout, err := cmd.CombinedOutput()
-	if err != nil {
-		panic(err)
-	}
-	return strings.Split(fmt.Sprintf("%s", stdout), "@")[0]
+	return PreferenceSingleton.GithubId
 }
 
 func GetMacSyncConfigRepositoryName() string {
@@ -102,5 +94,3 @@ func HandleTildePath(path string) string {
 func IsRootUser() bool {
 	return os.Geteuid() == 0
 }
-
-var GrayColor = color.New(color.FgWhite, color.Faint)
