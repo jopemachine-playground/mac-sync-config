@@ -21,6 +21,10 @@ func GetMacSyncConfigRepositoryName() string {
 	return PreferenceSingleton.MacSyncConfigGitRepositoryName
 }
 
+func GetRemoteConfigFolderName() string {
+	return ".mac-sync-configs"
+}
+
 func CreateMacSyncConfigRequest(fileName string) (*req.Response, error) {
 	return req.C().R().
 		SetHeader("Authorization", fmt.Sprintf("token %s", PreferenceSingleton.GithubToken)).

@@ -15,25 +15,25 @@ import (
 func CompressConfigs(targetFilePath string, dstFilePath string) {
 	cpArgs := strings.Fields(fmt.Sprintf("cp -pR %s %s", targetFilePath, dstFilePath))
 	cpCmd := exec.Command(cpArgs[0], cpArgs[1:]...)
-	_, err := cpCmd.CombinedOutput()
+	output, err := cpCmd.CombinedOutput()
 	if err != nil {
-		panic(err)
+		panic(string(output))
 	}
 
 	hashValue := filepath.Base(dstFilePath)
 	tarArgs := strings.Fields(fmt.Sprintf("tar -cjf %s.tar %s", dstFilePath, hashValue))
 	tarCmd := exec.Command(tarArgs[0], tarArgs[1:]...)
 	tarCmd.Dir = filepath.Dir(dstFilePath)
-	_, err = tarCmd.CombinedOutput()
+	output, err = tarCmd.CombinedOutput()
 	if err != nil {
-		panic(err)
+		panic(string(output))
 	}
 
 	bzipArgs := strings.Fields(fmt.Sprintf("bzip2 %s.tar", dstFilePath))
 	bzipCmd := exec.Command(bzipArgs[0], bzipArgs[1:]...)
-	_, err = bzipCmd.CombinedOutput()
+	output, err = bzipCmd.CombinedOutput()
 	if err != nil {
-		panic(err)
+		panic(string(output))
 	}
 }
 
@@ -96,7 +96,7 @@ func CloneMacSyncConfigRepository() string {
 		panic(err)
 	}
 
-	tempConfigDirPath := fmt.Sprintf("%s/%s", tempPath, "mac-sync-configs")
+	tempConfigDirPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
 
 	if _, err := os.Stat(tempConfigDirPath); errors.Is(err, os.ErrNotExist) {
 		os.Mkdir(tempConfigDirPath, os.ModePerm)
@@ -126,7 +126,7 @@ func DownloadRemoteConfigs() error {
 	for _, configPathToSync := range configPathsToSync {
 		hash := GetConfigHash(configPathToSync)
 
-		configDirPath := fmt.Sprintf("%s/mac-sync-configs/%s", tempPath, hash)
+		configDirPath := fmt.Sprintf("%s/%s/%s", tempPath, GetRemoteConfigFolderName(), hash)
 		configZipFilePath := fmt.Sprintf("%s.tar.bz2", configDirPath)
 
 		if _, err := os.Stat(configZipFilePath); errors.Is(err, os.ErrNotExist) {
@@ -170,7 +170,7 @@ func UploadConfigFiles() {
 
 	for _, configPathToSync := range configs.ConfigPathsToSync {
 		hashId := GetConfigHash(configPathToSync)
-		dstFilePath := fmt.Sprintf("%s/mac-sync-configs/%s.tar.bz2", tempPath, hashId)
+		dstFilePath := fmt.Sprintf("%s/%s/%s.tar.bz2", tempPath, GetRemoteConfigFolderName(), hashId)
 		dstFilePathWithoutExt := strings.Split(dstFilePath, ".tar")[0]
 
 		// Update files if already exist
