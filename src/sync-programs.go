@@ -19,10 +19,7 @@ func executeCommand(command string, programName string) error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
-
-	if err != nil {
-		return err
-	}
+	PanicIfErr(err)
 
 	return nil
 }

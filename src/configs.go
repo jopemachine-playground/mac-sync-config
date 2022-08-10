@@ -12,13 +12,24 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const CachePath = "~/Library/Caches/Mac-sync"
-const PreferencePath = "~/Library/Preferences/Mac-sync"
+const (
+	CachePath      = "~/Library/Caches/Mac-sync"
+	PreferencePath = "~/Library/Preferences/Mac-sync"
+)
+
+const (
+	MacSyncConfigsFile  = "mac-sync-configs.yaml"
+	MacSyncProgramsFile = "mac-sync-programs.yaml"
+)
 
 var (
 	ProgramCachePath               = strings.Join([]string{CachePath, "local-programs.yaml"}, "/")
 	ConfigFileLastChangedCachePath = strings.Join([]string{CachePath, "last-changed.json"}, "/")
 	PreferenceFilePath             = strings.Join([]string{PreferencePath, "preference.json"}, "/")
+)
+
+var (
+	PreferenceSingleton = ReadPreference()
 )
 
 type PackageManagerInfo struct {
@@ -37,10 +48,6 @@ type Preference struct {
 	UserPassword                   string `json:"user_password"`
 	MacSyncConfigGitRepositoryName string `json:"mac_sync_config_git_repository_name"`
 }
-
-var (
-	PreferenceSingleton = ReadPreference()
-)
 
 func scanPreference(config *Preference) {
 	Logger.Question("Enter your Github id:")
@@ -80,20 +87,16 @@ func ReadPreference() Preference {
 		scanPreference(&config)
 
 		bytesToWrite, err := json.Marshal(config)
-		if err != nil {
-			panic(err)
-		}
+		PanicIfErr(err)
 
 		os.WriteFile(preferenceFilePath, bytesToWrite, os.ModePerm)
 		Logger.Success(fmt.Sprintf("Preference file is saved successfully on the '%s'", preferenceFilePath))
 	} else {
 		dat, err := ioutil.ReadFile(preferenceFilePath)
-		if err != nil {
-			panic(err)
-		}
-		if err := json.Unmarshal(dat, &config); err != nil {
-			panic(err)
-		}
+		PanicIfErr(err)
+
+		err = json.Unmarshal(dat, &config)
+		PanicIfErr(err)
 	}
 
 	return config
@@ -107,15 +110,12 @@ func ReadLocalProgramCache() map[string]PackageManagerInfo {
 	}
 
 	dat, err := ioutil.ReadFile(programCachePath)
-	if err != nil {
-		panic(err)
-	}
+	PanicIfErr(err)
 
 	var config map[string]PackageManagerInfo
 
-	if err := yaml.Unmarshal(dat, &config); err != nil {
-		panic(err)
-	}
+	err = yaml.Unmarshal(dat, &config)
+	PanicIfErr(err)
 
 	return config
 }
@@ -128,15 +128,12 @@ func ReadConfigFileLastChanged() map[string]string {
 	}
 
 	dat, err := ioutil.ReadFile(configFileLastChangedCachePath)
-	if err != nil {
-		panic(err)
-	}
+	PanicIfErr(err)
 
 	var lastChangedMap map[string]string
 
-	if err := json.Unmarshal(dat, &lastChangedMap); err != nil {
-		panic(err)
-	}
+	err = json.Unmarshal(dat, &lastChangedMap)
+	PanicIfErr(err)
 
 	return lastChangedMap
 }
@@ -147,21 +144,16 @@ func WriteConfigFileLastChanged(lastChanged map[string]string) {
 
 	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(cacheDir, os.ModePerm)
-		if err != nil {
-			panic(err)
-		}
+		PanicIfErr(err)
 	} else if _, err := os.Stat(configFileLastChangedCachePath); !errors.Is(err, os.ErrNotExist) {
 		os.Remove(configFileLastChangedCachePath)
 	}
 
 	bytesToWrite, err := json.Marshal(lastChanged)
-	if err != nil {
-		panic(err)
-	}
+	PanicIfErr(err)
 
-	if err := ioutil.WriteFile(configFileLastChangedCachePath, bytesToWrite, os.ModePerm); err != nil {
-		panic(err)
-	}
+	err = ioutil.WriteFile(configFileLastChangedCachePath, bytesToWrite, os.ModePerm)
+	PanicIfErr(err)
 }
 
 func WriteLocalProgramCache(cache map[string]PackageManagerInfo) {
@@ -170,21 +162,16 @@ func WriteLocalProgramCache(cache map[string]PackageManagerInfo) {
 
 	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(cacheDir, os.ModePerm)
-		if err != nil {
-			panic(err)
-		}
+		PanicIfErr(err)
 	} else if _, err := os.Stat(programCachePath); !errors.Is(err, os.ErrNotExist) {
 		os.Remove(programCachePath)
 	}
 
 	bytesToWrite, err := yaml.Marshal(cache)
-	if err != nil {
-		panic(err)
-	}
+	PanicIfErr(err)
 
-	if err := ioutil.WriteFile(programCachePath, bytesToWrite, os.ModePerm); err != nil {
-		panic(err)
-	}
+	err = ioutil.WriteFile(programCachePath, bytesToWrite, os.ModePerm)
+	PanicIfErr(err)
 }
 
 func ClearCache() {

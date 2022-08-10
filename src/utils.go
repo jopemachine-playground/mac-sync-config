@@ -13,14 +13,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func GetGitUserId() string {
-	return PreferenceSingleton.GithubId
-}
-
-func GetMacSyncConfigRepositoryName() string {
-	return PreferenceSingleton.MacSyncConfigGitRepositoryName
-}
-
 func GetRemoteConfigFolderName() string {
 	return ".mac-sync-configs"
 }
@@ -29,8 +21,8 @@ func CreateMacSyncConfigRequest(fileName string) (*req.Response, error) {
 	return req.C().R().
 		SetHeader("Authorization", fmt.Sprintf("token %s", PreferenceSingleton.GithubToken)).
 		SetHeader("Cache-control", "no-cache").
-		SetPathParam("userName", GetGitUserId()).
-		SetPathParam("repoName", GetMacSyncConfigRepositoryName()).
+		SetPathParam("userName", PreferenceSingleton.GithubId).
+		SetPathParam("repoName", PreferenceSingleton.MacSyncConfigGitRepositoryName).
 		SetPathParam("branchName", "main").
 		SetPathParam("fileName", fileName).
 		EnableDump().
@@ -38,7 +30,7 @@ func CreateMacSyncConfigRequest(fileName string) (*req.Response, error) {
 }
 
 func FetchRemoveProgramInfo() map[string]PackageManagerInfo {
-	resp, err := CreateMacSyncConfigRequest("mac-sync-programs.yaml")
+	resp, err := CreateMacSyncConfigRequest(MacSyncProgramsFile)
 
 	if err != nil {
 		panic(err)
@@ -97,4 +89,16 @@ func HandleTildePath(path string) string {
 
 func IsRootUser() bool {
 	return os.Geteuid() == 0
+}
+
+func PanicIfErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func PanicIfErrWithOutput(output string, err error) {
+	if err != nil {
+		panic(output)
+	}
 }

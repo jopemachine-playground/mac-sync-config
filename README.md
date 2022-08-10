@@ -2,10 +2,6 @@
 
 Sync specified programs and config files between macs using Git with ease.
 
-## Prerequisite
-
-- Git account setting - This program assumes there is your email information in your `~/.gitconfig`.
-
 ## How to set up
 
 1. Create a private repository for `mac-sync` in Github.

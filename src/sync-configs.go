@@ -16,34 +16,26 @@ func CompressConfigs(targetFilePath string, dstFilePath string) {
 	cpArgs := strings.Fields(fmt.Sprintf("cp -pR %s %s", targetFilePath, dstFilePath))
 	cpCmd := exec.Command(cpArgs[0], cpArgs[1:]...)
 	output, err := cpCmd.CombinedOutput()
-	if err != nil {
-		panic(string(output))
-	}
+	PanicIfErrWithOutput(string(output), err)
 
 	hashValue := filepath.Base(dstFilePath)
 	tarArgs := strings.Fields(fmt.Sprintf("tar -cjf %s.tar %s", dstFilePath, hashValue))
 	tarCmd := exec.Command(tarArgs[0], tarArgs[1:]...)
 	tarCmd.Dir = filepath.Dir(dstFilePath)
 	output, err = tarCmd.CombinedOutput()
-	if err != nil {
-		panic(string(output))
-	}
+	PanicIfErrWithOutput(string(output), err)
 
 	bzipArgs := strings.Fields(fmt.Sprintf("bzip2 %s.tar", dstFilePath))
 	bzipCmd := exec.Command(bzipArgs[0], bzipArgs[1:]...)
 	output, err = bzipCmd.CombinedOutput()
-	if err != nil {
-		panic(string(output))
-	}
+	PanicIfErrWithOutput(string(output), err)
 }
 
 func DecompressConfigs(filepath string) string {
 	bunzipArgs := strings.Fields(fmt.Sprintf("bunzip2 %s", filepath))
 	bunzipCmd := exec.Command(bunzipArgs[0], bunzipArgs[1:]...)
-	_, err := bunzipCmd.CombinedOutput()
-	if err != nil {
-		panic(err)
-	}
+	output, err := bunzipCmd.CombinedOutput()
+	PanicIfErrWithOutput(string(output), err)
 
 	tarFilePath := strings.Split(filepath, ".bz2")[0]
 	configsDirPath := strings.Split(tarFilePath, ".tar")[0]
@@ -54,10 +46,8 @@ func DecompressConfigs(filepath string) string {
 
 	tarArgs := strings.Fields(fmt.Sprintf("tar -xvf %s -C %s", tarFilePath, configsDirPath))
 	tarCmd := exec.Command(tarArgs[0], tarArgs[1:]...)
-	_, err = tarCmd.CombinedOutput()
-	if err != nil {
-		panic(err)
-	}
+	output, err = tarCmd.CombinedOutput()
+	PanicIfErrWithOutput(string(output), err)
 
 	return configsDirPath
 }
@@ -69,32 +59,25 @@ func ReadConfig(filepath string) (ConfigInfo, error) {
 
 	dat, err := ioutil.ReadFile(filepath)
 
-	if err != nil {
-		panic(err)
-	}
+	PanicIfErr(err)
 
 	var config ConfigInfo
 
-	if err := yaml.Unmarshal(dat, &config); err != nil {
-		panic(err)
-	}
+	err = yaml.Unmarshal(dat, &config)
+	PanicIfErr(err)
 
 	return config, nil
 }
 
 func CloneMacSyncConfigRepository() string {
 	tempPath, err := os.MkdirTemp("", "mac-sync-config-temp-")
-	if err != nil {
-		panic(err)
-	}
+	PanicIfErr(err)
 
 	// Should fully clone repository for commit and push
-	args := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/%s %s", GetGitUserId(), GetMacSyncConfigRepositoryName(), tempPath))
+	args := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/%s %s", PreferenceSingleton.GithubId, PreferenceSingleton.MacSyncConfigGitRepositoryName, tempPath))
 	cmd := exec.Command(args[0], args[1:]...)
-	_, err = cmd.CombinedOutput()
-	if err != nil {
-		panic(err)
-	}
+	output, err := cmd.CombinedOutput()
+	PanicIfErrWithOutput(string(output), err)
 
 	tempConfigDirPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
 
@@ -115,11 +98,9 @@ func DownloadRemoteConfigs() error {
 	}
 
 	tempPath := CloneMacSyncConfigRepository()
-	configs, err := ReadConfig(fmt.Sprintf("%s/mac-sync-configs.yaml", tempPath))
+	configs, err := ReadConfig(fmt.Sprintf("%s/%s", tempPath, MacSyncConfigsFile))
 
-	if err != nil {
-		panic(err)
-	}
+	PanicIfErr(err)
 
 	configPathsToSync := configs.ConfigPathsToSync
 
@@ -130,7 +111,7 @@ func DownloadRemoteConfigs() error {
 		configZipFilePath := fmt.Sprintf("%s.tar.bz2", configDirPath)
 
 		if _, err := os.Stat(configZipFilePath); errors.Is(err, os.ErrNotExist) {
-			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"mac-sync-configs.yaml\", but the config file not found. Upload the config file before download", configPathToSync))
+			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file not found. Upload the config file before download", configPathToSync, MacSyncConfigsFile))
 			continue
 		}
 
@@ -142,9 +123,7 @@ func DownloadRemoteConfigs() error {
 		mkdirArgs := strings.Fields(fmt.Sprintf("mkdir -p %s", dirPath))
 		mkdirCmd := exec.Command(mkdirArgs[0], mkdirArgs[1:]...)
 		_, err := mkdirCmd.CombinedOutput()
-		if err != nil {
-			panic(err)
-		}
+		PanicIfErr(err)
 
 		os.Rename(srcPath, dstPath)
 	}
@@ -162,11 +141,8 @@ func DownloadRemoteConfigs() error {
 
 func UploadConfigFiles() {
 	tempPath := CloneMacSyncConfigRepository()
-	configs, err := ReadConfig(fmt.Sprintf("%s/mac-sync-configs.yaml", tempPath))
-
-	if err != nil {
-		panic(err)
-	}
+	configs, err := ReadConfig(fmt.Sprintf("%s/%s", tempPath, MacSyncConfigsFile))
+	PanicIfErr(err)
 
 	for _, configPathToSync := range configs.ConfigPathsToSync {
 		hashId := GetConfigHash(configPathToSync)
@@ -176,9 +152,7 @@ func UploadConfigFiles() {
 		// Update files if already exist
 		if _, err := os.Stat(dstFilePath); !errors.Is(err, os.ErrNotExist) {
 			err := os.Remove(dstFilePath)
-			if err != nil {
-				panic(err)
-			}
+			PanicIfErr(err)
 		}
 
 		if _, err := os.Stat(HandleTildePath(configPathToSync)); errors.Is(err, os.ErrNotExist) {
@@ -187,9 +161,8 @@ func UploadConfigFiles() {
 		}
 
 		CompressConfigs(HandleTildePath(configPathToSync), dstFilePathWithoutExt)
-		if err := os.RemoveAll(dstFilePathWithoutExt); err != nil {
-			panic(err)
-		}
+		err := os.RemoveAll(dstFilePathWithoutExt)
+		PanicIfErr(err)
 
 		Logger.Success(fmt.Sprintf("\"%s\" file updated.", configPathToSync))
 	}
@@ -197,38 +170,31 @@ func UploadConfigFiles() {
 	gitAddArgs := strings.Fields(fmt.Sprintf("git add %s", tempPath))
 	gitAddCmd := exec.Command(gitAddArgs[0], gitAddArgs[1:]...)
 	gitAddCmd.Dir = tempPath
-	_, err = gitAddCmd.CombinedOutput()
-	if err != nil {
-		panic(err)
-	}
+	output, err := gitAddCmd.CombinedOutput()
+	PanicIfErrWithOutput(string(output), err)
 
 	gitCommitArgs := strings.Fields("git commit -m 🔧 -m updated_by_mac-sync")
 	gitCommitCmd := exec.Command(gitCommitArgs[0], gitCommitArgs[1:]...)
 	gitCommitCmd.Dir = tempPath
 
-	_, err = gitCommitCmd.CombinedOutput()
-	if err != nil {
-		panic(err)
-	}
+	output, err = gitCommitCmd.CombinedOutput()
+	PanicIfErrWithOutput(string(output), err)
 
 	gitPushArgs := strings.Fields("git push -u origin main --force")
 	gitPushCmd := exec.Command(gitPushArgs[0], gitPushArgs[1:]...)
 	gitPushCmd.Dir = tempPath
-	_, err = gitPushCmd.CombinedOutput()
-	if err != nil {
-		panic(err)
-	}
+	output, err = gitPushCmd.CombinedOutput()
+	PanicIfErrWithOutput(string(output), err)
 
 	Logger.Info("🔧 Config files updated successfully")
 	os.RemoveAll(tempPath)
 }
 
 func FetchRemoteConfigCommitHashId() string {
-	args := strings.Fields(fmt.Sprintf("git ls-remote https://github.com/%s/%s HEAD", GetGitUserId(), GetMacSyncConfigRepositoryName()))
+	args := strings.Fields(fmt.Sprintf("git ls-remote https://github.com/%s/%s HEAD", PreferenceSingleton.GithubId, PreferenceSingleton.MacSyncConfigGitRepositoryName))
 	cmd := exec.Command(args[0], args[1:]...)
 	stdout, err := cmd.CombinedOutput()
-	if err != nil {
-		panic(err)
-	}
+	PanicIfErr(err)
+
 	return strings.TrimSpace(strings.Split(fmt.Sprintf("%s", stdout), "HEAD")[0])
 }
