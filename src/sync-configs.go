@@ -14,39 +14,33 @@ import (
 )
 
 func CompressConfigs(targetFilePath string, dstFilePath string) {
-	cpCmd := exec.Command("cp", "-pR", targetFilePath, dstFilePath)
+	cpCmd := exec.Command("cp", "-R", targetFilePath, dstFilePath)
 	output, err := cpCmd.CombinedOutput()
 	PanicIfErrWithOutput(string(output), err)
 
 	hashValue := filepath.Base(dstFilePath)
+	// c: create archive
+	// j: compress by zip2
+	// f: specify file name
 	tarArgs := strings.Fields(fmt.Sprintf("tar -cjf %s.tar %s", dstFilePath, hashValue))
 	tarCmd := exec.Command(tarArgs[0], tarArgs[1:]...)
 	tarCmd.Dir = filepath.Dir(dstFilePath)
 	output, err = tarCmd.CombinedOutput()
 	PanicIfErrWithOutput(string(output), err)
-
-	bzipArgs := strings.Fields(fmt.Sprintf("bzip2 %s.tar", dstFilePath))
-	bzipCmd := exec.Command(bzipArgs[0], bzipArgs[1:]...)
-	output, err = bzipCmd.CombinedOutput()
-	PanicIfErrWithOutput(string(output), err)
 }
 
 func DecompressConfigs(filepath string) string {
-	bunzipArgs := strings.Fields(fmt.Sprintf("bunzip2 %s", filepath))
-	bunzipCmd := exec.Command(bunzipArgs[0], bunzipArgs[1:]...)
-	output, err := bunzipCmd.CombinedOutput()
-	PanicIfErrWithOutput(string(output), err)
+	configsDirPath := strings.Split(filepath, ".tar")[0]
 
-	tarFilePath := strings.Split(filepath, ".bz2")[0]
-	configsDirPath := strings.Split(tarFilePath, ".tar")[0]
-
-	if err = os.Mkdir(configsDirPath, os.ModePerm); err != nil {
+	if err := os.Mkdir(configsDirPath, os.ModePerm); err != nil {
 		panic(err)
 	}
 
-	tarArgs := strings.Fields(fmt.Sprintf("tar -xvf %s -C %s", tarFilePath, configsDirPath))
+	// c: decompress archive
+	// f: specify file name
+	tarArgs := strings.Fields(fmt.Sprintf("tar -xf %s -C %s", filepath, configsDirPath))
 	tarCmd := exec.Command(tarArgs[0], tarArgs[1:]...)
-	output, err = tarCmd.CombinedOutput()
+	output, err := tarCmd.CombinedOutput()
 	PanicIfErrWithOutput(string(output), err)
 
 	return configsDirPath
@@ -108,7 +102,7 @@ func DownloadRemoteConfigs() error {
 		hash := GetConfigHash(configPathToSync)
 
 		configDirPath := fmt.Sprintf("%s/%s/%s", tempPath, GetRemoteConfigFolderName(), hash)
-		configZipFilePath := fmt.Sprintf("%s.tar.bz2", configDirPath)
+		configZipFilePath := fmt.Sprintf("%s.tar", configDirPath)
 
 		if _, err := os.Stat(configZipFilePath); errors.Is(err, os.ErrNotExist) {
 			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file not found. Upload the config file before download", configPathToSync, MacSyncConfigsFile))
@@ -120,10 +114,9 @@ func DownloadRemoteConfigs() error {
 		dstPath := HandleWhiteSpaceInPath(HandleTildePath(configPathToSync))
 		dirPath := filepath.Dir(dstPath)
 
-		mkdirArgs := strings.Fields(fmt.Sprintf("mkdir -p %s", dirPath))
-		mkdirCmd := exec.Command(mkdirArgs[0], mkdirArgs[1:]...)
-		_, err := mkdirCmd.CombinedOutput()
-		PanicIfErr(err)
+		mkdirCmd := exec.Command("mkdir", "-p", dirPath)
+		output, err := mkdirCmd.CombinedOutput()
+		PanicIfErrWithOutput(string(output), err)
 
 		os.Rename(srcPath, dstPath)
 	}
@@ -149,7 +142,7 @@ func UploadConfigFiles() {
 
 	for _, configPathToSync := range configs.ConfigPathsToSync {
 		hashId := GetConfigHash(configPathToSync)
-		dstFilePath := fmt.Sprintf("%s/%s/%s.tar.bz2", tempPath, GetRemoteConfigFolderName(), hashId)
+		dstFilePath := fmt.Sprintf("%s/%s/%s.tar", tempPath, GetRemoteConfigFolderName(), hashId)
 		dstFilePathWithoutExt := strings.Split(dstFilePath, ".tar")[0]
 
 		// Update files if already exist
@@ -191,7 +184,7 @@ func UploadConfigFiles() {
 	output, err = gitPushCmd.CombinedOutput()
 	PanicIfErrWithOutput(string(output), err)
 
-	Logger.Info("🔧 Config files updated successfully")
+	Logger.Info("Config files updated successfully")
 	os.RemoveAll(tempPath)
 }
 
