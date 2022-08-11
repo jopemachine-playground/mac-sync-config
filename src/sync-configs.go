@@ -83,13 +83,13 @@ func CloneMacSyncConfigRepository() string {
 	return tempPath
 }
 
-func DownloadRemoteConfigs() error {
+func DownloadRemoteConfigs() {
 	remoteCommitHashId := FetchRemoteConfigCommitHashId()
 	configFileLastChanged := ReadConfigFileLastChanged()
 
 	if configFileLastChanged["remote-commit-hash-id"] == remoteCommitHashId {
 		Logger.Info("Config files already up to dated.")
-		return nil
+		return
 	}
 
 	tempPath := CloneMacSyncConfigRepository()
@@ -130,7 +130,6 @@ func DownloadRemoteConfigs() error {
 	WriteConfigFileLastChanged(configFileLastChanged)
 
 	Logger.Success("Local config files are updated. Some changes might requires reboot to apply.")
-	return nil
 }
 
 func UploadConfigFiles() {

@@ -29,7 +29,7 @@ func CreateMacSyncConfigRequest(fileName string) (*req.Response, error) {
 		Get("https://raw.githubusercontent.com/{userName}/{repoName}/{branchName}/{fileName}")
 }
 
-func FetchRemoveProgramInfo() map[string]PackageManagerInfo {
+func FetchRemoteProgramInfo() map[string]PackageManagerInfo {
 	resp, err := CreateMacSyncConfigRequest(MacSyncProgramsFile)
 
 	if err != nil {

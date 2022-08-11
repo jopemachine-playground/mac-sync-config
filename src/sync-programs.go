@@ -12,16 +12,15 @@ func executeCommand(command string, programName string) error {
 	args := strings.Fields(command)
 	cmd := exec.Command(args[0], args[1:]...)
 
-	if args[0] == "sudo" {
-		cmd.Stdin = strings.NewReader(PreferenceSingleton.UserPassword)
-	}
+	// if args[0] == "sudo" {
+	//	cmd.Stdin = strings.NewReader(PreferenceSingleton.UserPassword)
+	// }
+
+	cmd.Stdin = strings.NewReader(PreferenceSingleton.UserPassword)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	PanicIfErr(err)
-
-	return nil
+	return cmd.Run()
 }
 
 func extractErrMsg(output string, err error) string {
@@ -32,27 +31,30 @@ func extractErrMsg(output string, err error) string {
 	}
 }
 
-func install(command string, program string, progress string) {
+func install(command string, program string, progress string) error {
 	command = strings.ReplaceAll(command, "{program}", program)
 	Logger.Log(fmt.Sprintf("%s Installing \"%s\"... %s", fmt.Sprint(progress), program, fmt.Sprintf("(%s)", command)))
 
-	executeCommand(command, program)
+	err := executeCommand(command, program)
 	Logger.Log("")
+	return err
 }
 
-func uninstall(command string, program string) {
+func uninstall(command string, program string) error {
 	command = strings.ReplaceAll(command, "{program}", program)
 	Logger.Log(fmt.Sprintf("\"%s\" is uninstalled from remote. Uninstalling \"%s\"...", program, program))
 
-	executeCommand(command, program)
+	err := executeCommand(command, program)
 	Logger.Log("")
+	return err
 }
 
 func SyncPrograms() {
 	var totalCnt int
+	var failedCnt int
 
 	localProgramCache := ReadLocalProgramCache()
-	newPrograms := FetchRemoveProgramInfo()
+	newPrograms := FetchRemoteProgramInfo()
 
 	// If some local items does not exist on new dependencies, delete them.
 	if localProgramCache != nil {
@@ -71,13 +73,18 @@ func SyncPrograms() {
 			// If pkgManager removed, remove all packages of the pkgManager
 			if _, found := newPrograms[pkgManagerName]; !found {
 				for _, program := range localInstalledPrograms {
-					uninstall(uninstallCommand, program)
+					if err := uninstall(uninstallCommand, program); err != nil {
+						failedCnt += 1
+					}
 				}
 				totalCnt += len(localInstalledPrograms)
 			} else {
 				for _, program := range localInstalledPrograms {
 					if !StringContains(newPrograms[pkgManagerName].Programs, program) {
-						uninstall(uninstallCommand, program)
+						if err := uninstall(uninstallCommand, program); err != nil {
+							uninstall(uninstallCommand, program)
+							failedCnt += 1
+						}
 						totalCnt += 1
 					} else {
 						newProgramsCopy := newPrograms[pkgManagerName]
@@ -113,7 +120,11 @@ func SyncPrograms() {
 		remotePrograms := pkgManagerInfo.Programs
 
 		for _, program := range remotePrograms {
-			install(installCommand, program, fmt.Sprintf("[%d/%d]", currentIdx, totalCnt))
+			progress := fmt.Sprintf("[%d/%d]", currentIdx, totalCnt)
+
+			if err := install(installCommand, program, progress); err != nil {
+				failedCnt += 1
+			}
 			currentIdx += 1
 		}
 	}
@@ -121,9 +132,9 @@ func SyncPrograms() {
 	if totalCnt == 0 {
 		Logger.Success("All programs are already synced")
 	} else {
-		Logger.Success(fmt.Sprintf("%d programs updated.", totalCnt))
+		Logger.Success(fmt.Sprintf("%d items updated successfully, %s items update failed", totalCnt, failedCnt))
 	}
 
 	// TODO: Remove below request, deep copy the info object.
-	WriteLocalProgramCache(FetchRemoveProgramInfo())
+	WriteLocalProgramCache(FetchRemoteProgramInfo())
 }
