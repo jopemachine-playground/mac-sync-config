@@ -20,7 +20,7 @@ func CompressConfigs(targetFilePath string, dstFilePath string) {
 
 	hashValue := filepath.Base(dstFilePath)
 	// c: create archive
-	// j: compress by zip2
+	// j: compress by bzip2
 	// f: specify file name
 	tarArgs := strings.Fields(fmt.Sprintf("tar -cjf %s.tar %s", dstFilePath, hashValue))
 	tarCmd := exec.Command(tarArgs[0], tarArgs[1:]...)
@@ -36,8 +36,9 @@ func DecompressConfigs(filepath string) string {
 		panic(err)
 	}
 
-	// c: decompress archive
+	// x: decompress archive
 	// f: specify file name
+	// C: specify target directory
 	tarArgs := strings.Fields(fmt.Sprintf("tar -xf %s -C %s", filepath, configsDirPath))
 	tarCmd := exec.Command(tarArgs[0], tarArgs[1:]...)
 	output, err := tarCmd.CombinedOutput()

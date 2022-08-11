@@ -1,6 +1,6 @@
 # mac-sync
 
-Sync specified programs and config files between macs using Git with ease.
+Sync specified programs and config files between macs using Github with ease.
 
 ## How to set up
 
