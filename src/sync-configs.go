@@ -1,6 +1,7 @@
 package src
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -143,6 +144,9 @@ func UploadConfigFiles() {
 	configs, err := ReadConfig(fmt.Sprintf("%s/%s", tempPath, MacSyncConfigsFile))
 	PanicIfErr(err)
 
+	var commitMsgBuffer bytes.Buffer
+	commitMsgBuffer.WriteString("-m")
+
 	for _, configPathToSync := range configs.ConfigPathsToSync {
 		hashId := GetConfigHash(configPathToSync)
 		dstFilePath := fmt.Sprintf("%s/%s/%s.tar.bz2", tempPath, GetRemoteConfigFolderName(), hashId)
@@ -154,6 +158,7 @@ func UploadConfigFiles() {
 			PanicIfErr(err)
 		}
 
+		commitMsgBuffer.WriteString(fmt.Sprintf("%s\n", HandleWhiteSpaceInPath(configPathToSync)))
 		absConfigPathToSync := HandleTildePath(configPathToSync)
 
 		if _, err := os.Stat(absConfigPathToSync); errors.Is(err, os.ErrNotExist) {
@@ -174,8 +179,7 @@ func UploadConfigFiles() {
 	output, err := gitAddCmd.CombinedOutput()
 	PanicIfErrWithOutput(string(output), err)
 
-	gitCommitArgs := strings.Fields("git commit -m 🔧 -m updated_by_mac-sync")
-	gitCommitCmd := exec.Command(gitCommitArgs[0], gitCommitArgs[1:]...)
+	gitCommitCmd := exec.Command("git", "commit", "-m", "🔧", commitMsgBuffer.String())
 	gitCommitCmd.Dir = tempPath
 
 	output, err = gitCommitCmd.CombinedOutput()
