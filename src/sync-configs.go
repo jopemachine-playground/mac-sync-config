@@ -13,8 +13,7 @@ import (
 )
 
 func CompressConfigs(targetFilePath string, dstFilePath string) {
-	cpArgs := strings.Fields(fmt.Sprintf("cp -pR %s %s", targetFilePath, dstFilePath))
-	cpCmd := exec.Command(cpArgs[0], cpArgs[1:]...)
+	cpCmd := exec.Command("cp", "-pR", targetFilePath, dstFilePath)
 	output, err := cpCmd.CombinedOutput()
 	PanicIfErrWithOutput(string(output), err)
 
@@ -117,7 +116,7 @@ func DownloadRemoteConfigs() error {
 
 		DecompressConfigs(configZipFilePath)
 		srcPath := fmt.Sprintf("%s/%s", configDirPath, hash)
-		dstPath := HandleTildePath(configPathToSync)
+		dstPath := HandleWhiteSpaceInPath(HandleTildePath(configPathToSync))
 		dirPath := filepath.Dir(dstPath)
 
 		mkdirArgs := strings.Fields(fmt.Sprintf("mkdir -p %s", dirPath))
@@ -155,12 +154,14 @@ func UploadConfigFiles() {
 			PanicIfErr(err)
 		}
 
-		if _, err := os.Stat(HandleTildePath(configPathToSync)); errors.Is(err, os.ErrNotExist) {
+		absConfigPathToSync := HandleTildePath(configPathToSync)
+
+		if _, err := os.Stat(absConfigPathToSync); errors.Is(err, os.ErrNotExist) {
 			Logger.Warning(fmt.Sprintf("\"%s\" file not found in the local", configPathToSync))
 			continue
 		}
 
-		CompressConfigs(HandleTildePath(configPathToSync), dstFilePathWithoutExt)
+		CompressConfigs(absConfigPathToSync, dstFilePathWithoutExt)
 		err := os.RemoveAll(dstFilePathWithoutExt)
 		PanicIfErr(err)
 

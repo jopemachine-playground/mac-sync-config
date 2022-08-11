@@ -87,6 +87,10 @@ func HandleTildePath(path string) string {
 	return path
 }
 
+func HandleWhiteSpaceInPath(path string) string {
+	return strings.ReplaceAll(path, " ", "\\ ")
+}
+
 func IsRootUser() bool {
 	return os.Geteuid() == 0
 }
