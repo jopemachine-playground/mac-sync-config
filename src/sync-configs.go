@@ -39,8 +39,7 @@ func DecompressConfigs(filepath string) string {
 	// x: decompress archive
 	// f: specify file name
 	// C: specify target directory
-	tarArgs := strings.Fields(fmt.Sprintf("tar -xf %s -C %s", filepath, configsDirPath))
-	tarCmd := exec.Command(tarArgs[0], tarArgs[1:]...)
+	tarCmd := exec.Command("tar", "-xf", filepath, "-C", configsDirPath)
 	output, err := tarCmd.CombinedOutput()
 	PanicIfErrWithOutput(string(output), err)
 
@@ -112,14 +111,20 @@ func DownloadRemoteConfigs() {
 
 		DecompressConfigs(configZipFilePath)
 		srcPath := fmt.Sprintf("%s/%s", configDirPath, hash)
-		dstPath := HandleWhiteSpaceInPath(HandleTildePath(configPathToSync))
+		dstPath := HandleTildePath(configPathToSync)
 		dirPath := filepath.Dir(dstPath)
 
-		mkdirCmd := exec.Command("mkdir", "-p", dirPath)
+		mkdirCmd := exec.Command("mkdir", "-p", HandleWhiteSpaceInPath(dirPath))
 		output, err := mkdirCmd.CombinedOutput()
 		PanicIfErrWithOutput(string(output), err)
 
-		os.Rename(srcPath, dstPath)
+		if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
+			err = os.RemoveAll(dstPath)
+			PanicIfErr(err)
+		}
+		
+		err = os.Rename(srcPath, dstPath)
+		PanicIfErr(err)
 	}
 
 	if _, err := os.Stat(tempPath); errors.Is(err, os.ErrNotExist) {
