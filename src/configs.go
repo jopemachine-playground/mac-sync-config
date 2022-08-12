@@ -177,7 +177,14 @@ func WriteLocalProgramCache(cache map[string]PackageManagerInfo) {
 func ClearCache() {
 	programCachePath := HandleTildePath(ProgramCachePath)
 	configFileLastChangedCachePath := HandleTildePath(ConfigFileLastChangedCachePath)
-	os.Remove(programCachePath)
-	os.Remove(configFileLastChangedCachePath)
+	err := os.Remove(programCachePath)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		panic(err)
+	}
+
+	err = os.Remove(configFileLastChangedCachePath)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		panic(err)
+	}
 	Logger.Success("Cache file cleared")
 }

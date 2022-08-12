@@ -122,7 +122,7 @@ func DownloadRemoteConfigs() {
 			err = os.RemoveAll(dstPath)
 			PanicIfErr(err)
 		}
-		
+
 		err = os.Rename(srcPath, dstPath)
 		PanicIfErr(err)
 	}
@@ -171,13 +171,19 @@ func UploadConfigFiles() {
 		Logger.Success(fmt.Sprintf("\"%s\" file updated.", configPathToSync))
 	}
 
+	// If there is previous commit, reset to previous log.
+	gitResetArgs := strings.Fields("git reset --hard HEAD^1")
+	gitResetCmd := exec.Command(gitResetArgs[0], gitResetArgs[1:]...)
+	gitResetCmd.Dir = tempPath
+	gitResetCmd.Run()
+
 	gitAddArgs := strings.Fields(fmt.Sprintf("git add %s", tempPath))
 	gitAddCmd := exec.Command(gitAddArgs[0], gitAddArgs[1:]...)
 	gitAddCmd.Dir = tempPath
 	output, err := gitAddCmd.CombinedOutput()
 	PanicIfErrWithOutput(string(output), err)
 
-	gitCommitCmd := exec.Command("git", "commit", "-m", "🔧", commitMsgBuffer.String())
+	gitCommitCmd := exec.Command("git", "commit", "--author", "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>", "--allow-empty", "-m", "🔧", commitMsgBuffer.String())
 	gitCommitCmd.Dir = tempPath
 
 	output, err = gitCommitCmd.CombinedOutput()
