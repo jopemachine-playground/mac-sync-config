@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	CachePath      = "~/Library/Caches/Mac-sync"
-	PreferencePath = "~/Library/Preferences/Mac-sync"
+	CachePath      = "~/Library/Caches/Mac-sync-config"
+	PreferencePath = "~/Library/Preferences/Mac-sync-config"
 )
 
 const (
@@ -59,7 +59,7 @@ func scanPreference(config *Preference) {
 	ghToken.Scan()
 	config.GithubToken = ghToken.Text()
 
-	Logger.Question("Enter a Git repository name for saving mac-sync's configuration files:")
+	Logger.Question("Enter a Git repository name for saving mac-sync-config's configuration files:")
 	repoName := bufio.NewScanner(os.Stdin)
 	repoName.Scan()
 	config.MacSyncConfigGitRepositoryName = repoName.Text()
@@ -70,7 +70,7 @@ func ReadPreference() Preference {
 
 	var config Preference
 
-	dat, err := keychain.GetGenericPassword("Mac-sync", "jopemachine", "Mac-sync", "org.jopemachine")
+	dat, err := keychain.GetGenericPassword("Mac-sync-config", "jopemachine", "Mac-sync-config", "org.jopemachine")
 
 	// If not exist, create new preference config file
 	if err == keychain.ErrorNoSuchKeychain {
@@ -85,9 +85,9 @@ func ReadPreference() Preference {
 
 		keyChainItem := keychain.NewItem()
 		keyChainItem.SetSecClass(keychain.SecClassGenericPassword)
-		keyChainItem.SetService("Mac-sync")
+		keyChainItem.SetService("Mac-sync-config")
 		keyChainItem.SetAccount("jopemachine")
-		keyChainItem.SetLabel("Mac-sync")
+		keyChainItem.SetLabel("Mac-sync-config")
 		keyChainItem.SetAccessGroup("org.jopemachine")
 		keyChainItem.SetData([]byte(bytesToWrite))
 		keyChainItem.SetSynchronizable(keychain.SynchronizableNo)
@@ -103,7 +103,7 @@ func ReadPreference() Preference {
 
 		PanicIfErr(err)
 
-		Logger.Success(fmt.Sprintf("mac-sync's preference is saved successfully on the keychain."))
+		Logger.Success(fmt.Sprintf("mac-sync-config's configurations are saved successfully on the keychain."))
 	} else if err != nil {
 		println(err)
 	} else {
