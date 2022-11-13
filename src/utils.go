@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/imroc/req/v3"
-	"gopkg.in/yaml.v3"
 )
 
 func GetRemoteConfigFolderName() string {
@@ -25,25 +24,6 @@ func CreateMacSyncConfigRequest(fileName string) (*req.Response, error) {
 		SetPathParam("fileName", fileName).
 		EnableDump().
 		Get("https://raw.githubusercontent.com/{userName}/{repoName}/{branchName}/{fileName}")
-}
-
-func FetchRemoteProgramInfo() map[string]PackageManagerInfo {
-	resp, err := CreateMacSyncConfigRequest(MacSyncProgramsFile)
-
-	if err != nil {
-		panic(err)
-	}
-
-	if resp.IsSuccess() {
-		var result map[string]PackageManagerInfo
-		if err := yaml.Unmarshal(resp.Bytes(), &result); err != nil {
-			panic(err)
-		}
-
-		return result
-	}
-
-	panic(resp.Dump())
 }
 
 // TODO: Replace below function with stdlib's one when it is merged

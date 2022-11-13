@@ -1,4 +1,4 @@
-module github.com/jopemachine/mac-sync
+module github.com/jopemachine/mac-sync-config
 
 go 1.18
 

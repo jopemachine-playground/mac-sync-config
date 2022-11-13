@@ -8,8 +8,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -18,12 +16,10 @@ const (
 )
 
 const (
-	MacSyncConfigsFile  = "mac-sync-configs.yaml"
-	MacSyncProgramsFile = "mac-sync-programs.yaml"
+	MacSyncConfigsFile = "mac-sync-configs.yaml"
 )
 
 var (
-	ProgramCachePath               = strings.Join([]string{CachePath, "local-programs.yaml"}, "/")
 	ConfigFileLastChangedCachePath = strings.Join([]string{CachePath, "last-changed.json"}, "/")
 	PreferenceFilePath             = strings.Join([]string{PreferencePath, "preference.json"}, "/")
 )
@@ -96,24 +92,6 @@ func ReadPreference() Preference {
 	return config
 }
 
-func ReadLocalProgramCache() map[string]PackageManagerInfo {
-	programCachePath := HandleTildePath(ProgramCachePath)
-
-	if _, err := os.Stat(programCachePath); errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
-
-	dat, err := ioutil.ReadFile(programCachePath)
-	PanicIfErr(err)
-
-	var config map[string]PackageManagerInfo
-
-	err = yaml.Unmarshal(dat, &config)
-	PanicIfErr(err)
-
-	return config
-}
-
 func ReadConfigFileLastChanged() map[string]string {
 	configFileLastChangedCachePath := HandleTildePath(ConfigFileLastChangedCachePath)
 
@@ -150,33 +128,10 @@ func WriteConfigFileLastChanged(lastChanged map[string]string) {
 	PanicIfErr(err)
 }
 
-func WriteLocalProgramCache(cache map[string]PackageManagerInfo) {
-	cacheDir := HandleTildePath(CachePath)
-	programCachePath := HandleTildePath(ProgramCachePath)
-
-	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(cacheDir, os.ModePerm)
-		PanicIfErr(err)
-	} else if _, err := os.Stat(programCachePath); !errors.Is(err, os.ErrNotExist) {
-		os.Remove(programCachePath)
-	}
-
-	bytesToWrite, err := yaml.Marshal(cache)
-	PanicIfErr(err)
-
-	err = ioutil.WriteFile(programCachePath, bytesToWrite, os.ModePerm)
-	PanicIfErr(err)
-}
-
 func ClearCache() {
-	programCachePath := HandleTildePath(ProgramCachePath)
 	configFileLastChangedCachePath := HandleTildePath(ConfigFileLastChangedCachePath)
-	err := os.Remove(programCachePath)
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		panic(err)
-	}
 
-	err = os.Remove(configFileLastChangedCachePath)
+	err := os.Remove(configFileLastChangedCachePath)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		panic(err)
 	}

@@ -4,19 +4,19 @@ import (
 	"log"
 	"os"
 
-	API "github.com/jopemachine/mac-sync/src"
+	API "github.com/jopemachine/mac-sync-config/src"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
 	if API.IsRootUser() {
-		API.Logger.Error("Running mac-sync as root is not allowed.\nIf you want to install some programs as root, prepend 'sudo' into the install command.")
+		API.Logger.Error("Running mac-sync-config as root is not allowed.\nIf you want to install some programs as root, prepend 'sudo' into the install command.")
 		os.Exit(1)
 	}
 
 	app := &cli.App{
-		Name:  "mac-sync",
-		Usage: "Sync the config files and programs between macs through Github.",
+		Name:  "mac-sync-config",
+		Usage: "Sync the config files between macs through Github.",
 		Commands: []*cli.Command{
 			{
 				Name:  "push",
@@ -36,17 +36,8 @@ func main() {
 				},
 			},
 			{
-				Name:  "sync",
-				Usage: "Sync programs with the remote repository",
-				Action: func(*cli.Context) error {
-					API.SyncPrograms()
-					return nil
-				},
-			},
-			{
-				Name:    "clear-cache",
-				Aliases: []string{"c"},
-				Usage:   "Clear cache",
+				Name:  "clear-cache",
+				Usage: "Clear cache",
 				Action: func(*cli.Context) error {
 					API.ClearCache()
 					return nil
