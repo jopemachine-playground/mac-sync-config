@@ -23,7 +23,7 @@ func (logger loggerType) Success(msg string) {
 }
 
 func (logger loggerType) Error(msg string) {
-	Logger.Log(fmt.Sprintf("%s %s", color.RedString("✖"), msg))
+	Logger.Log(fmt.Sprintf("%s %s", color.RedString("✖"), color.RedString(msg)))
 }
 
 func (logger loggerType) Info(msg string) {
@@ -31,9 +31,9 @@ func (logger loggerType) Info(msg string) {
 }
 
 func (logger loggerType) Warning(msg string) {
-	Logger.Log(fmt.Sprintf("%s %s", color.YellowString("⚠️"), msg))
+	Logger.Log(fmt.Sprintf("%s %s", color.YellowString("⚠️"), color.RedString(msg)))
 }
 
 func (logger loggerType) Question(msg string) {
-	Logger.Log(fmt.Sprintf("%s %s", color.GreenString("?"), msg))
+	Logger.Log(fmt.Sprintf("%s %s", color.GreenString("?"), color.GreenString(msg)))
 }

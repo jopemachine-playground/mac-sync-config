@@ -22,7 +22,7 @@ func main() {
 				Name:  "push",
 				Usage: "Push the local config files to the remote repository",
 				Action: func(*cli.Context) error {
-					API.UploadConfigFiles()
+					API.PushConfigFiles()
 					return nil
 				},
 			},
@@ -30,7 +30,7 @@ func main() {
 				Name:  "pull",
 				Usage: "Pull the config files from the remote repository",
 				Action: func(*cli.Context) error {
-					API.DownloadRemoteConfigs()
+					API.PullRemoteConfigs()
 					return nil
 				},
 			},

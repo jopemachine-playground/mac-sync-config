@@ -13,37 +13,17 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func CompressConfigs(targetFilePath string, dstFilePath string) {
-	cpCmd := exec.Command("cp", "-R", targetFilePath, dstFilePath)
-	output, err := cpCmd.CombinedOutput()
+func CopyConfigs(targetFilePath string, dstFilePath string) {
+	dstFilePath = (dstFilePath)
+	dirPath := filepath.Dir(dstFilePath)
+
+	mkdirCmd := exec.Command("mkdir", "-p", dirPath)
+	output, err := mkdirCmd.CombinedOutput()
 	PanicIfErrWithOutput(string(output), err)
 
-	hashValue := filepath.Base(dstFilePath)
-	// c: create archive
-	// j: compress by bzip2
-	// f: specify file name
-	tarArgs := strings.Fields(fmt.Sprintf("tar -cjf %s.tar %s", dstFilePath, hashValue))
-	tarCmd := exec.Command(tarArgs[0], tarArgs[1:]...)
-	tarCmd.Dir = filepath.Dir(dstFilePath)
-	output, err = tarCmd.CombinedOutput()
+	cpCmd := exec.Command("cp", "-fR", targetFilePath, dstFilePath)
+	output, err = cpCmd.CombinedOutput()
 	PanicIfErrWithOutput(string(output), err)
-}
-
-func DecompressConfigs(filepath string) string {
-	configsDirPath := strings.Split(filepath, ".tar")[0]
-
-	if err := os.Mkdir(configsDirPath, os.ModePerm); err != nil {
-		panic(err)
-	}
-
-	// x: decompress archive
-	// f: specify file name
-	// C: specify target directory
-	tarCmd := exec.Command("tar", "-xf", filepath, "-C", configsDirPath)
-	output, err := tarCmd.CombinedOutput()
-	PanicIfErrWithOutput(string(output), err)
-
-	return configsDirPath
 }
 
 func ReadConfig(filepath string) (ConfigInfo, error) {
@@ -82,7 +62,7 @@ func CloneMacSyncConfigRepository() string {
 	return tempPath
 }
 
-func DownloadRemoteConfigs() {
+func PullRemoteConfigs() {
 	remoteCommitHashId := FetchRemoteConfigCommitHashId()
 	configFileLastChanged := ReadConfigFileLastChanged()
 
@@ -99,32 +79,24 @@ func DownloadRemoteConfigs() {
 	configPathsToSync := configs.ConfigPathsToSync
 
 	for _, configPathToSync := range configPathsToSync {
-		hash := GetConfigHash(configPathToSync)
+		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
+		absConfigPathToSync := HandleTildePath(configPathToSync)
+		srcFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 
-		configDirPath := fmt.Sprintf("%s/%s/%s", tempPath, GetRemoteConfigFolderName(), hash)
-		configZipFilePath := fmt.Sprintf("%s.tar", configDirPath)
-
-		if _, err := os.Stat(configZipFilePath); errors.Is(err, os.ErrNotExist) {
+		if _, err := os.Stat(srcFilePath); errors.Is(err, os.ErrNotExist) {
 			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file not found. Please push the config file before pulling.", configPathToSync, MacSyncConfigsFile))
 			continue
 		}
 
-		DecompressConfigs(configZipFilePath)
-		srcPath := fmt.Sprintf("%s/%s", configDirPath, hash)
 		dstPath := HandleTildePath(configPathToSync)
-		dirPath := filepath.Dir(dstPath)
-
-		mkdirCmd := exec.Command("mkdir", "-p", HandleWhiteSpaceInPath(dirPath))
-		output, err := mkdirCmd.CombinedOutput()
-		PanicIfErrWithOutput(string(output), err)
 
 		if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
 			err = os.RemoveAll(dstPath)
 			PanicIfErr(err)
 		}
 
-		err = os.Rename(srcPath, dstPath)
-		PanicIfErr(err)
+		CopyConfigs(srcFilePath, dstPath)
+		Logger.Success(fmt.Sprintf("\"%s\" updated.", configPathToSync))
 	}
 
 	if _, err := os.Stat(tempPath); errors.Is(err, os.ErrNotExist) {
@@ -134,10 +106,10 @@ func DownloadRemoteConfigs() {
 	configFileLastChanged["remote-commit-hash-id"] = remoteCommitHashId
 	WriteConfigFileLastChanged(configFileLastChanged)
 
-	Logger.Success("Local config files are updated. Some changes might require to reboot to apply.")
+	Logger.Info("Local config files are updated. Some changes might require to reboot to apply.")
 }
 
-func UploadConfigFiles() {
+func PushConfigFiles() {
 	tempPath := CloneMacSyncConfigRepository()
 	configs, err := ReadConfig(fmt.Sprintf("%s/%s", tempPath, MacSyncConfigsFile))
 	PanicIfErr(err)
@@ -146,36 +118,28 @@ func UploadConfigFiles() {
 	commitMsgBuffer.WriteString("-m")
 
 	for _, configPathToSync := range configs.ConfigPathsToSync {
-		hashId := GetConfigHash(configPathToSync)
-		dstFilePath := fmt.Sprintf("%s/%s/%s.tar", tempPath, GetRemoteConfigFolderName(), hashId)
-		dstFilePathWithoutExt := strings.Split(dstFilePath, ".tar")[0]
+		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
+		absConfigPathToSync := HandleTildePath(configPathToSync)
+		dstFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 
-		// Update files if already exist
+		// Delete files for update if the files already exist
 		if _, err := os.Stat(dstFilePath); !errors.Is(err, os.ErrNotExist) {
 			err := os.Remove(dstFilePath)
 			PanicIfErr(err)
 		}
 
 		commitMsgBuffer.WriteString(fmt.Sprintf("%s\n", HandleWhiteSpaceInPath(configPathToSync)))
-		absConfigPathToSync := HandleTildePath(configPathToSync)
 
 		if _, err := os.Stat(absConfigPathToSync); errors.Is(err, os.ErrNotExist) {
-			Logger.Warning(fmt.Sprintf("\"%s\" file not found in the local.", configPathToSync))
+			Logger.Warning(fmt.Sprintf("\"%s\" not found in the local computer.", configPathToSync))
 			continue
 		}
 
-		CompressConfigs(absConfigPathToSync, dstFilePathWithoutExt)
-		err := os.RemoveAll(dstFilePathWithoutExt)
+		CopyConfigs(absConfigPathToSync, dstFilePath)
 		PanicIfErr(err)
 
-		Logger.Success(fmt.Sprintf("\"%s\" file updated.", configPathToSync))
+		Logger.Success(fmt.Sprintf("\"%s\" updated.", configPathToSync))
 	}
-
-	// If there is previous commit, reset to previous log.
-	gitResetArgs := strings.Fields("git reset --hard HEAD^1")
-	gitResetCmd := exec.Command(gitResetArgs[0], gitResetArgs[1:]...)
-	gitResetCmd.Dir = tempPath
-	gitResetCmd.Run()
 
 	gitAddArgs := strings.Fields(fmt.Sprintf("git add %s", tempPath))
 	gitAddCmd := exec.Command(gitAddArgs[0], gitAddArgs[1:]...)
@@ -192,8 +156,9 @@ func UploadConfigFiles() {
 	gitPushArgs := strings.Fields("git push -u origin main --force")
 	gitPushCmd := exec.Command(gitPushArgs[0], gitPushArgs[1:]...)
 	gitPushCmd.Dir = tempPath
-	output, err = gitPushCmd.CombinedOutput()
-	PanicIfErrWithOutput(string(output), err)
+	gitPushCmd.Stdout = os.Stdout
+	gitPushCmd.Stderr = os.Stderr
+	gitPushCmd.Run()
 
 	Logger.Info("Config files updated successfully.")
 	os.RemoveAll(tempPath)

@@ -90,7 +90,7 @@ func ReadPreference() Preference {
 		PanicIfErr(err)
 
 		os.WriteFile(preferenceFilePath, bytesToWrite, os.ModePerm)
-		Logger.Success(fmt.Sprintf("Preference file is saved successfully on the '%s'.", preferenceFilePath))
+		Logger.Success(fmt.Sprintf("mac-sync's preference file is saved successfully on the '%s'.", preferenceFilePath))
 	} else {
 		dat, err := ioutil.ReadFile(preferenceFilePath)
 		PanicIfErr(err)

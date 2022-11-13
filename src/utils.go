@@ -1,8 +1,6 @@
 package src
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"os"
 	"os/user"
@@ -63,12 +61,6 @@ func StringContains(slice []string, item string) bool {
 // Removes slice element at index(s) and returns new slice
 func Remove[T any](slice []T, s int) []T {
 	return append(slice[:s], slice[s+1:]...)
-}
-
-func GetConfigHash(text string) string {
-	algorithm := sha256.New()
-	algorithm.Write([]byte(text))
-	return hex.EncodeToString(algorithm.Sum(nil))
 }
 
 func HandleTildePath(path string) string {

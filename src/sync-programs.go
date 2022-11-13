@@ -59,7 +59,7 @@ func SyncPrograms() {
 	// If some local items does not exist on new dependencies, delete them.
 	if localProgramCache != nil {
 		localProgramCacheKeys := make([]string, 0, len(localProgramCache))
-		for k, _ := range localProgramCache {
+		for k := range localProgramCache {
 			localProgramCacheKeys = append(localProgramCacheKeys, k)
 		}
 		sort.Strings(localProgramCacheKeys)
@@ -102,7 +102,7 @@ func SyncPrograms() {
 	}
 
 	newProgramsKeys := make([]string, 0, len(newPrograms))
-	for k, _ := range newPrograms {
+	for k := range newPrograms {
 		newProgramsKeys = append(newProgramsKeys, k)
 	}
 	sort.Strings(newProgramsKeys)
@@ -130,9 +130,9 @@ func SyncPrograms() {
 	}
 
 	if totalCnt == 0 {
-		Logger.Success("All programs are already synced")
+		Logger.Success("All programs are already synced.")
 	} else {
-		Logger.Success(fmt.Sprintf("%d items updated successfully, %d items update failed", totalCnt, failedCnt))
+		Logger.Success(fmt.Sprintf("%d items updated successfully, %d items update failed.", totalCnt, failedCnt))
 	}
 
 	// TODO: Remove below request, deep copy the info object.

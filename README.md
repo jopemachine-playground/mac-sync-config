@@ -8,11 +8,11 @@ Sync the config files and programs between macs through Github.
 
 2. Add `mac-sync-programs.yaml`, `mac-sync-configs.yaml` to the `main` branch of the repository.
 
-3. Run `mac-sync upload-configs` to upload configuration files to the repository. You need to enter some information when you first try it.
+3. Run `mac-sync push` to upload configuration files to the repository. You need to enter some information when you first try it.
 
-4. In another mac, run `mac-sync download-configs` to download configuration files from the repository.
+4. In another mac, run `mac-sync pull` to download configuration files from the repository.
 
-5. Run `mac-sync sync-programs` to download all programs.
+5. Run `mac-sync sync` to download all programs.
 
 ## Configuration files
 
@@ -64,10 +64,9 @@ COMMANDS:
    pull                 Pull configs from remote
    sync-programs, s     Sync programs with remote
    clear-cache, c       Clear cache
-   help, h              Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --help, -h  show help (default: false)
+   --help, -h           Show help
 ```
 
 ## Example
