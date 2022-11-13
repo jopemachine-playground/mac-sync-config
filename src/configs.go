@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/keybase/go-keychain"
 )
 
 const (
@@ -45,6 +47,8 @@ type Preference struct {
 }
 
 func scanPreference(config *Preference) {
+	Logger.Info("Please enter some information for accessing your Github repository.")
+
 	Logger.Question("Enter your Github id:")
 	ghId := bufio.NewScanner(os.Stdin)
 	ghId.Scan()
@@ -63,28 +67,46 @@ func scanPreference(config *Preference) {
 
 func ReadPreference() Preference {
 	preferenceDirPath := HandleTildePath(PreferencePath)
-	preferenceFilePath := HandleTildePath(PreferenceFilePath)
 
 	var config Preference
 
+	dat, err := keychain.GetGenericPassword("Mac-sync", "jopemachine", "Mac-sync", "org.jopemachine")
+
 	// If not exist, create new preference config file
-	if _, err := os.Stat(preferenceFilePath); errors.Is(err, os.ErrNotExist) {
+	if err == keychain.ErrorNoSuchKeychain {
 		err := os.Mkdir(preferenceDirPath, os.ModePerm)
 		if err != nil && !errors.Is(err, os.ErrExist) {
 			panic(err)
 		}
 
 		scanPreference(&config)
-
 		bytesToWrite, err := json.Marshal(config)
 		PanicIfErr(err)
 
-		os.WriteFile(preferenceFilePath, bytesToWrite, os.ModePerm)
-		Logger.Success(fmt.Sprintf("mac-sync's preference file is saved successfully on the '%s'.", preferenceFilePath))
-	} else {
-		dat, err := ioutil.ReadFile(preferenceFilePath)
+		keyChainItem := keychain.NewItem()
+		keyChainItem.SetSecClass(keychain.SecClassGenericPassword)
+		keyChainItem.SetService("Mac-sync")
+		keyChainItem.SetAccount("jopemachine")
+		keyChainItem.SetLabel("Mac-sync")
+		keyChainItem.SetAccessGroup("org.jopemachine")
+		keyChainItem.SetData([]byte(bytesToWrite))
+		keyChainItem.SetSynchronizable(keychain.SynchronizableNo)
+		keyChainItem.SetAccessible(keychain.AccessibleWhenUnlocked)
+
+		err = keychain.AddItem(keyChainItem)
+
+		if err == keychain.ErrorDuplicateItem {
+			err = keychain.DeleteItem(keyChainItem)
+			PanicIfErr(err)
+			err = keychain.AddItem(keyChainItem)
+		}
+
 		PanicIfErr(err)
 
+		Logger.Success(fmt.Sprintf("mac-sync's preference is saved successfully on the keychain."))
+	} else if err != nil {
+		println(err)
+	} else {
 		err = json.Unmarshal(dat, &config)
 		PanicIfErr(err)
 	}

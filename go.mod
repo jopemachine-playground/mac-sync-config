@@ -4,6 +4,8 @@ go 1.18
 
 require gopkg.in/yaml.v3 v3.0.1
 
+require github.com/keybase/go-keychain v0.0.0-20221007210036-1ce7470f08a7 // indirect
+
 require (
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
