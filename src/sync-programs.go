@@ -1,12 +1,15 @@
 package src
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
 	"sort"
 	"strings"
 )
+
+var userPassword string = ""
 
 func executeCommand(command string, programName string) error {
 	args := strings.Fields(command)
@@ -16,7 +19,7 @@ func executeCommand(command string, programName string) error {
 	//	cmd.Stdin = strings.NewReader(PreferenceSingleton.UserPassword)
 	// }
 
-	cmd.Stdin = strings.NewReader(PreferenceSingleton.UserPassword)
+	cmd.Stdin = strings.NewReader(userPassword)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -52,6 +55,11 @@ func uninstall(command string, program string) error {
 func SyncPrograms() {
 	var totalCnt int
 	var failedCnt int
+
+	Logger.Question("Enter your Mac OS User account's password:")
+	password := bufio.NewScanner(os.Stdin)
+	password.Scan()
+	userPassword = password.Text()
 
 	localProgramCache := ReadLocalProgramCache()
 	newPrograms := FetchRemoteProgramInfo()
