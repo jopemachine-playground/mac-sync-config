@@ -66,9 +66,6 @@ COMMANDS:
    pull                 Pull configs from remote
    sync                 Sync programs with remote
    clear-cache          Clear cache
-
-GLOBAL OPTIONS:
-   --help, -h           Show help
 ```
 
 ## Example

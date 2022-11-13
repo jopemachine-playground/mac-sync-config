@@ -62,7 +62,7 @@ func CloneMacSyncConfigRepository() string {
 	return tempPath
 }
 
-func PullRemoteConfigs() {
+func PullRemoteConfigs(argFilter string) {
 	remoteCommitHashId := FetchRemoteConfigCommitHashId()
 	configFileLastChanged := ReadConfigFileLastChanged()
 
@@ -80,6 +80,11 @@ func PullRemoteConfigs() {
 
 	for _, configPathToSync := range configPathsToSync {
 		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
+
+		if argFilter != "" && strings.Contains(filepath.Base(configPathToSync), argFilter) == false {
+			continue
+		}
+
 		absConfigPathToSync := HandleTildePath(configPathToSync)
 		srcFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 
@@ -103,8 +108,10 @@ func PullRemoteConfigs() {
 		os.Mkdir(tempPath, os.ModePerm)
 	}
 
-	configFileLastChanged["remote-commit-hash-id"] = remoteCommitHashId
-	WriteConfigFileLastChanged(configFileLastChanged)
+	if argFilter != "" {
+		configFileLastChanged["remote-commit-hash-id"] = remoteCommitHashId
+		WriteConfigFileLastChanged(configFileLastChanged)
+	}
 
 	Logger.Info("Local config files are updated. Some changes might require to reboot to apply.")
 }

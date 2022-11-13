@@ -27,10 +27,11 @@ func main() {
 				},
 			},
 			{
-				Name:  "pull",
-				Usage: "Pull the config files from the remote repository",
-				Action: func(*cli.Context) error {
-					API.PullRemoteConfigs()
+				Name:      "pull",
+				Usage:     "Pull the config files from the remote repository",
+				ArgsUsage: "Filter to basename of the config file",
+				Action: func(c *cli.Context) error {
+					API.PullRemoteConfigs(c.Args().First())
 					return nil
 				},
 			},

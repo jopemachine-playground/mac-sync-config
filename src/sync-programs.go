@@ -42,7 +42,7 @@ func install(command string, program string, progress string) error {
 
 func uninstall(command string, program string) error {
 	command = strings.ReplaceAll(command, "{program}", program)
-	Logger.Log(fmt.Sprintf("\"%s\" is uninstalled from remote. Uninstalling \"%s\"...", program, program))
+	Logger.Log(fmt.Sprintf("\"%s\" items are uninstalled from the remote repository. Uninstalling \"%s\"...", program, program))
 
 	err := executeCommand(command, program)
 	Logger.Log("")
