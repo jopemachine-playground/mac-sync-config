@@ -55,17 +55,17 @@ func scanPreference(config *Preference) {
 	ghId.Scan()
 	config.GithubId = ghId.Text()
 
-	Logger.Question("Enter your Github token:")
+	Logger.Question("Enter your Github access token:")
 	ghToken := bufio.NewScanner(os.Stdin)
 	ghToken.Scan()
 	config.GithubToken = ghToken.Text()
 
-	Logger.Question("Enter your User account's password:")
+	Logger.Question("Enter your Mac OS User account's password:")
 	password := bufio.NewScanner(os.Stdin)
 	password.Scan()
 	config.UserPassword = password.Text()
 
-	Logger.Question("Enter a Git repository name for storing mac-sync's configuration files:")
+	Logger.Question("Enter a Git repository name for saving mac-sync's configuration files:")
 	repoName := bufio.NewScanner(os.Stdin)
 	repoName.Scan()
 	config.MacSyncConfigGitRepositoryName = repoName.Text()
@@ -90,7 +90,7 @@ func ReadPreference() Preference {
 		PanicIfErr(err)
 
 		os.WriteFile(preferenceFilePath, bytesToWrite, os.ModePerm)
-		Logger.Success(fmt.Sprintf("Preference file is saved successfully on the '%s'", preferenceFilePath))
+		Logger.Success(fmt.Sprintf("Preference file is saved successfully on the '%s'.", preferenceFilePath))
 	} else {
 		dat, err := ioutil.ReadFile(preferenceFilePath)
 		PanicIfErr(err)
@@ -186,5 +186,5 @@ func ClearCache() {
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		panic(err)
 	}
-	Logger.Success("Cache file cleared")
+	Logger.Success("Cache file cleared.")
 }

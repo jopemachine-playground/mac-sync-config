@@ -87,7 +87,7 @@ func DownloadRemoteConfigs() {
 	configFileLastChanged := ReadConfigFileLastChanged()
 
 	if configFileLastChanged["remote-commit-hash-id"] == remoteCommitHashId {
-		Logger.Info("Config files already up to dated.")
+		Logger.Info("Config files already up to date.")
 		return
 	}
 
@@ -105,7 +105,7 @@ func DownloadRemoteConfigs() {
 		configZipFilePath := fmt.Sprintf("%s.tar", configDirPath)
 
 		if _, err := os.Stat(configZipFilePath); errors.Is(err, os.ErrNotExist) {
-			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file not found. Upload the config file before download", configPathToSync, MacSyncConfigsFile))
+			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file not found. Please push the config file before pulling.", configPathToSync, MacSyncConfigsFile))
 			continue
 		}
 
@@ -134,7 +134,7 @@ func DownloadRemoteConfigs() {
 	configFileLastChanged["remote-commit-hash-id"] = remoteCommitHashId
 	WriteConfigFileLastChanged(configFileLastChanged)
 
-	Logger.Success("Local config files are updated. Some changes might requires reboot to apply.")
+	Logger.Success("Local config files are updated. Some changes might require to reboot to apply.")
 }
 
 func UploadConfigFiles() {
@@ -160,7 +160,7 @@ func UploadConfigFiles() {
 		absConfigPathToSync := HandleTildePath(configPathToSync)
 
 		if _, err := os.Stat(absConfigPathToSync); errors.Is(err, os.ErrNotExist) {
-			Logger.Warning(fmt.Sprintf("\"%s\" file not found in the local", configPathToSync))
+			Logger.Warning(fmt.Sprintf("\"%s\" file not found in the local.", configPathToSync))
 			continue
 		}
 
@@ -195,7 +195,7 @@ func UploadConfigFiles() {
 	output, err = gitPushCmd.CombinedOutput()
 	PanicIfErrWithOutput(string(output), err)
 
-	Logger.Info("Config files updated successfully")
+	Logger.Info("Config files updated successfully.")
 	os.RemoveAll(tempPath)
 }
 

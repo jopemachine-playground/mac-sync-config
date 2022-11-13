@@ -16,30 +16,27 @@ func main() {
 
 	app := &cli.App{
 		Name:  "mac-sync",
-		Usage: "Sync specified programs and config files between macs using Github with ease.",
+		Usage: "Sync the config files and programs between macs through Github.",
 		Commands: []*cli.Command{
 			{
-				Name:    "upload-configs",
-				Aliases: []string{"u"},
-				Usage:   "Upload local config files to remote",
+				Name:  "push",
+				Usage: "Push the local config files to the remote repository",
 				Action: func(*cli.Context) error {
 					API.UploadConfigFiles()
 					return nil
 				},
 			},
 			{
-				Name:    "download-configs",
-				Aliases: []string{"d"},
-				Usage:   "Download configs from remote",
+				Name:  "pull",
+				Usage: "Pull the config files from the remote repository",
 				Action: func(*cli.Context) error {
 					API.DownloadRemoteConfigs()
 					return nil
 				},
 			},
 			{
-				Name:    "sync-programs",
-				Aliases: []string{"s"},
-				Usage:   "Sync programs with remote",
+				Name:  "sync",
+				Usage: "Sync programs with the remote repository",
 				Action: func(*cli.Context) error {
 					API.SyncPrograms()
 					return nil

@@ -132,7 +132,7 @@ func SyncPrograms() {
 	if totalCnt == 0 {
 		Logger.Success("All programs are already synced")
 	} else {
-		Logger.Success(fmt.Sprintf("%d items updated successfully, %s items update failed", totalCnt, failedCnt))
+		Logger.Success(fmt.Sprintf("%d items updated successfully, %d items update failed", totalCnt, failedCnt))
 	}
 
 	// TODO: Remove below request, deep copy the info object.

@@ -1,6 +1,6 @@
 # mac-sync
 
-Sync specified programs and config files between macs using Github with ease.
+Sync the config files and programs between macs through Github.
 
 ## How to set up
 
@@ -60,8 +60,8 @@ USAGE:
    mac-sync [global options] command
 
 COMMANDS:
-   upload-configs, u    Upload local config files to remote
-   download-configs, d  Download configs from remote
+   push                 Push local config files to remote
+   pull                 Pull configs from remote
    sync-programs, s     Sync programs with remote
    clear-cache, c       Clear cache
    help, h              Shows a list of commands or help for one command
