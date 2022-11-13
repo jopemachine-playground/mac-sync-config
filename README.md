@@ -2,6 +2,8 @@
 
 Sync the config files and programs between macs through Github.
 
+I made this for resolving the [keeping the consistent configs issue](https://apple.stackexchange.com/questions/30966/how-can-i-keep-settings-consistent-between-macs) between mac.
+
 ## How to set up
 
 1. Create a private repository for `mac-sync` in Github.
@@ -62,8 +64,8 @@ USAGE:
 COMMANDS:
    push                 Push local config files to remote
    pull                 Pull configs from remote
-   sync-programs, s     Sync programs with remote
-   clear-cache, c       Clear cache
+   sync                 Sync programs with remote
+   clear-cache          Clear cache
 
 GLOBAL OPTIONS:
    --help, -h           Show help
