@@ -6,17 +6,19 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	Utils "github.com/jopemachine/mac-sync-config/src/utils"
 )
 
 func CloneMacSyncConfigRepository() string {
 	tempPath, err := os.MkdirTemp("", "mac-sync-config-temp-")
-	PanicIfErr(err)
+	Utils.PanicIfErr(err)
 
 	// Should fully clone repository for commit and push
 	args := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/%s %s", PreferenceSingleton.GithubId, PreferenceSingleton.MacSyncConfigGitRepositoryName, tempPath))
 	cmd := exec.Command(args[0], args[1:]...)
 	output, err := cmd.CombinedOutput()
-	PanicIfErrWithOutput(string(output), err)
+	Utils.PanicIfErrWithOutput(string(output), err)
 
 	tempConfigDirPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
 
@@ -27,18 +29,27 @@ func CloneMacSyncConfigRepository() string {
 	return tempPath
 }
 
+func FetchRemoteConfigCommitHashId() string {
+	args := strings.Fields(fmt.Sprintf("git ls-remote https://github.com/%s/%s HEAD", PreferenceSingleton.GithubId, PreferenceSingleton.MacSyncConfigGitRepositoryName))
+	cmd := exec.Command(args[0], args[1:]...)
+	stdout, err := cmd.CombinedOutput()
+	Utils.PanicIfErr(err)
+
+	return strings.TrimSpace(strings.Split(fmt.Sprintf("%s", stdout), "HEAD")[0])
+}
+
 func GitAddCwd(cwd string) {
 	gitAddCmd := exec.Command("git", "add", cwd)
 	gitAddCmd.Dir = cwd
 	output, err := gitAddCmd.CombinedOutput()
-	PanicIfErrWithOutput(string(output), err)
+	Utils.PanicIfErrWithOutput(string(output), err)
 }
 
 func GitAddFile(cwd string, filePath string) {
 	gitAddCmd := exec.Command("git", "add", filePath)
 	gitAddCmd.Dir = cwd
 	output, err := gitAddCmd.CombinedOutput()
-	PanicIfErrWithOutput(string(output), err)
+	Utils.PanicIfErrWithOutput(string(output), err)
 }
 
 func GitCommit(cwd string) {
@@ -46,7 +57,7 @@ func GitCommit(cwd string) {
 	gitCommitCmd.Dir = cwd
 
 	output, err := gitCommitCmd.CombinedOutput()
-	PanicIfErrWithOutput(string(output), err)
+	Utils.PanicIfErrWithOutput(string(output), err)
 }
 
 func GitPush(cwd string) {
@@ -56,16 +67,16 @@ func GitPush(cwd string) {
 	gitPushCmd.Stdout = os.Stdout
 	gitPushCmd.Stderr = os.Stderr
 	err := gitPushCmd.Run()
-	PanicIfErr(err)
+	Utils.PanicIfErr(err)
 }
 
 func IsUpdated(cwd string, filePath string) bool {
-	gitDiffCmd := exec.Command("git", "diff", filePath)
-	gitDiffCmd.Dir = cwd
-	output, err := gitDiffCmd.CombinedOutput()
+	gitStatusCmd := exec.Command("git", "status", "-s", filePath)
+	gitStatusCmd.Dir = cwd
+	output, err := gitStatusCmd.CombinedOutput()
 	outputStr := string(output)
 
-	PanicIfErrWithOutput(outputStr, err)
+	Utils.PanicIfErrWithOutput(outputStr, err)
 
 	if len(outputStr) == 0 {
 		return false
@@ -81,5 +92,15 @@ func ShowDiff(cwd string, filePath string) {
 	gitDiffCmd.Stdout = os.Stdout
 	gitDiffCmd.Stderr = os.Stderr
 	err := gitDiffCmd.Run()
-	PanicIfErr(err)
+	Utils.PanicIfErr(err)
+}
+
+func ShowDiffTwoFile(cwd string, filePath string, filePath2 string) {
+	gitDiffCmd := exec.Command("git", "diff", filePath, filePath2)
+	gitDiffCmd.Dir = cwd
+
+	gitDiffCmd.Stdout = os.Stdout
+	gitDiffCmd.Stderr = os.Stderr
+	err := gitDiffCmd.Run()
+	Utils.PanicIfErr(err)
 }

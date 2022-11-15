@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	Utils "github.com/jopemachine/mac-sync-config/src/utils"
 	"github.com/keybase/go-keychain"
 )
 
@@ -33,6 +34,11 @@ var (
 var (
 	Flag_OverWrite = false
 )
+
+func GetRemoteConfigFolderName() string {
+	// #TODO: Add env variable here
+	return ".mac-sync-configs"
+}
 
 type PackageManagerInfo struct {
 	InstallCommand   string   `yaml:"install"`
@@ -72,7 +78,7 @@ func scanPreference(config *Preference) {
 }
 
 func ReadPreference() Preference {
-	preferenceDirPath := HandleTildePath(PreferencePath)
+	preferenceDirPath := HandleRelativePath(PreferencePath, nil)
 
 	var config Preference
 
@@ -87,7 +93,7 @@ func ReadPreference() Preference {
 
 		scanPreference(&config)
 		bytesToWrite, err := json.Marshal(config)
-		PanicIfErr(err)
+		Utils.PanicIfErr(err)
 
 		keyChainItem := keychain.NewItem()
 		keyChainItem.SetSecClass(keychain.SecClassGenericPassword)
@@ -103,61 +109,61 @@ func ReadPreference() Preference {
 
 		if err == keychain.ErrorDuplicateItem {
 			err = keychain.DeleteItem(keyChainItem)
-			PanicIfErr(err)
+			Utils.PanicIfErr(err)
 			err = keychain.AddItem(keyChainItem)
 		}
 
-		PanicIfErr(err)
+		Utils.PanicIfErr(err)
 
 		Logger.Success(fmt.Sprintf("mac-sync-config's configurations are saved successfully on the keychain."))
 	} else if err != nil {
 		println(err)
 	} else {
 		err = json.Unmarshal(dat, &config)
-		PanicIfErr(err)
+		Utils.PanicIfErr(err)
 	}
 
 	return config
 }
 
 func ReadConfigFileLastChanged() map[string]string {
-	configFileLastChangedCachePath := HandleTildePath(ConfigFileLastChangedCachePath)
+	configFileLastChangedCachePath := HandleRelativePath(ConfigFileLastChangedCachePath, nil)
 
 	if _, err := os.Stat(configFileLastChangedCachePath); errors.Is(err, os.ErrNotExist) {
 		return make(map[string]string)
 	}
 
 	dat, err := ioutil.ReadFile(configFileLastChangedCachePath)
-	PanicIfErr(err)
+	Utils.PanicIfErr(err)
 
 	var lastChangedMap map[string]string
 
 	err = json.Unmarshal(dat, &lastChangedMap)
-	PanicIfErr(err)
+	Utils.PanicIfErr(err)
 
 	return lastChangedMap
 }
 
 func WriteConfigFileLastChanged(lastChanged map[string]string) {
-	cacheDir := HandleTildePath(CachePath)
-	configFileLastChangedCachePath := HandleTildePath(ConfigFileLastChangedCachePath)
+	cacheDir := HandleRelativePath(CachePath, nil)
+	configFileLastChangedCachePath := HandleRelativePath(ConfigFileLastChangedCachePath, nil)
 
 	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(cacheDir, os.ModePerm)
-		PanicIfErr(err)
+		Utils.PanicIfErr(err)
 	} else if _, err := os.Stat(configFileLastChangedCachePath); !errors.Is(err, os.ErrNotExist) {
 		os.Remove(configFileLastChangedCachePath)
 	}
 
 	bytesToWrite, err := json.Marshal(lastChanged)
-	PanicIfErr(err)
+	Utils.PanicIfErr(err)
 
 	err = ioutil.WriteFile(configFileLastChangedCachePath, bytesToWrite, os.ModePerm)
-	PanicIfErr(err)
+	Utils.PanicIfErr(err)
 }
 
 func ClearCache() {
-	configFileLastChangedCachePath := HandleTildePath(ConfigFileLastChangedCachePath)
+	configFileLastChangedCachePath := HandleRelativePath(ConfigFileLastChangedCachePath, nil)
 
 	err := os.Remove(configFileLastChangedCachePath)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
