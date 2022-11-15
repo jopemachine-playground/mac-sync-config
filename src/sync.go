@@ -108,12 +108,11 @@ func PullRemoteConfigs(argFilter string) {
 		os.Mkdir(tempPath, os.ModePerm)
 	}
 
-	if argFilter != "" {
+	if argFilter == "" {
 		configFileLastChanged["remote-commit-hash-id"] = remoteCommitHashId
 		WriteConfigFileLastChanged(configFileLastChanged)
+		Logger.Info("Local config files are updated. Some changes might require to reboot to apply.")
 	}
-
-	Logger.Info("Local config files are updated. Some changes might require to reboot to apply.")
 }
 
 func PushConfigFiles() {
