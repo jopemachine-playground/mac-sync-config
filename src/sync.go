@@ -1,7 +1,6 @@
 package src
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -41,25 +40,6 @@ func ReadConfig(filepath string) (ConfigInfo, error) {
 	PanicIfErr(err)
 
 	return config, nil
-}
-
-func CloneMacSyncConfigRepository() string {
-	tempPath, err := os.MkdirTemp("", "mac-sync-config-temp-")
-	PanicIfErr(err)
-
-	// Should fully clone repository for commit and push
-	args := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/%s %s", PreferenceSingleton.GithubId, PreferenceSingleton.MacSyncConfigGitRepositoryName, tempPath))
-	cmd := exec.Command(args[0], args[1:]...)
-	output, err := cmd.CombinedOutput()
-	PanicIfErrWithOutput(string(output), err)
-
-	tempConfigDirPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
-
-	if _, err := os.Stat(tempConfigDirPath); errors.Is(err, os.ErrNotExist) {
-		os.Mkdir(tempConfigDirPath, os.ModePerm)
-	}
-
-	return tempPath
 }
 
 func PullRemoteConfigs(argFilter string) {
@@ -120,8 +100,8 @@ func PushConfigFiles() {
 	configs, err := ReadConfig(fmt.Sprintf("%s/%s", tempPath, MacSyncConfigsFile))
 	PanicIfErr(err)
 
-	var commitMsgBuffer bytes.Buffer
-	commitMsgBuffer.WriteString("-m")
+	var selectedFilePaths = []string{}
+	var updatedFilePaths = []string{}
 
 	for _, configPathToSync := range configs.ConfigPathsToSync {
 		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
@@ -130,11 +110,9 @@ func PushConfigFiles() {
 
 		// Delete files for update if the files already exist
 		if _, err := os.Stat(dstFilePath); !errors.Is(err, os.ErrNotExist) {
-			err := os.Remove(dstFilePath)
+			err := os.RemoveAll(dstFilePath)
 			PanicIfErr(err)
 		}
-
-		commitMsgBuffer.WriteString(fmt.Sprintf("%s\n", HandleWhiteSpaceInPath(configPathToSync)))
 
 		if _, err := os.Stat(absConfigPathToSync); errors.Is(err, os.ErrNotExist) {
 			Logger.Warning(fmt.Sprintf("\"%s\" not found in the local computer.", configPathToSync))
@@ -143,28 +121,34 @@ func PushConfigFiles() {
 
 		CopyConfigs(absConfigPathToSync, dstFilePath)
 		PanicIfErr(err)
-
-		Logger.Success(fmt.Sprintf("\"%s\" updated.", configPathToSync))
+		updatedFilePaths = append(updatedFilePaths, dstFilePath)
 	}
 
-	gitAddArgs := strings.Fields(fmt.Sprintf("git add %s", tempPath))
-	gitAddCmd := exec.Command(gitAddArgs[0], gitAddArgs[1:]...)
-	gitAddCmd.Dir = tempPath
-	output, err := gitAddCmd.CombinedOutput()
-	PanicIfErrWithOutput(string(output), err)
+	if Flag_OverWrite {
+		GitAddCwd(tempPath)
+		selectedFilePaths = updatedFilePaths
+	} else {
+		for _, updatedFilePath := range updatedFilePaths {
+			if haveDiff := IsUpdated(tempPath, updatedFilePath); haveDiff {
+				ShowDiff(tempPath, updatedFilePath)
 
-	gitCommitCmd := exec.Command("git", "commit", "--author", "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>", "--allow-empty", "-m", "🔧", commitMsgBuffer.String())
-	gitCommitCmd.Dir = tempPath
+				Logger.NewLine()
+				if yes := EnterYesNoQuestion("Update? (Y/N)"); yes {
+					GitAddFile(tempPath, updatedFilePath)
+					selectedFilePaths = append(selectedFilePaths, updatedFilePath)
+				}
+			}
 
-	output, err = gitCommitCmd.CombinedOutput()
-	PanicIfErrWithOutput(string(output), err)
+			Logger.NewLine()
+		}
 
-	gitPushArgs := strings.Fields("git push -u origin main --force")
-	gitPushCmd := exec.Command(gitPushArgs[0], gitPushArgs[1:]...)
-	gitPushCmd.Dir = tempPath
-	gitPushCmd.Stdout = os.Stdout
-	gitPushCmd.Stderr = os.Stderr
-	gitPushCmd.Run()
+		for _, selectedFilePath := range selectedFilePaths {
+			Logger.Success(fmt.Sprintf("\"%s\" updated.", selectedFilePath))
+		}
+	}
+
+	GitCommit(tempPath)
+	GitPush(tempPath)
 
 	Logger.Info("Config files updated successfully.")
 	os.RemoveAll(tempPath)

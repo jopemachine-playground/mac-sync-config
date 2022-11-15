@@ -30,6 +30,10 @@ var (
 	PreferenceSingleton = ReadPreference()
 )
 
+var (
+	Flag_OverWrite = false
+)
+
 type PackageManagerInfo struct {
 	InstallCommand   string   `yaml:"install"`
 	UninstallCommand string   `yaml:"uninstall"`
@@ -48,6 +52,8 @@ type Preference struct {
 
 func scanPreference(config *Preference) {
 	Logger.Info("Please enter some information for accessing your Github repository.")
+	Logger.Info("This information will be stored in your keychain")
+	Logger.NewLine()
 
 	Logger.Question("Enter your Github id:")
 	ghId := bufio.NewScanner(os.Stdin)

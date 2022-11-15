@@ -17,6 +17,15 @@ func main() {
 	app := &cli.App{
 		Name:  "mac-sync-config",
 		Usage: "Sync the config files between macs through Github.",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:        "overwrite",
+				Usage:       "Use this flag with 'push' command to overwrite all config files",
+				Required:    false,
+				Aliases:     []string{"o"},
+				Destination: &API.Flag_OverWrite,
+			},
+		},
 		Commands: []*cli.Command{
 			{
 				Name:  "push",

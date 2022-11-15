@@ -18,6 +18,10 @@ func (logger loggerType) Log(msg string) {
 	fmt.Println(msg)
 }
 
+func (logger loggerType) NewLine() {
+	fmt.Println()
+}
+
 func (logger loggerType) Success(msg string) {
 	Logger.Log(fmt.Sprintf("%s %s", color.GreenString("✔"), msg))
 }

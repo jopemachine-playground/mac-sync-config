@@ -2,6 +2,7 @@ package src
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -77,4 +78,21 @@ func PanicIfErrWithOutput(output string, err error) {
 	if err != nil {
 		panic(output)
 	}
+}
+
+func EnterYesNoQuestion(msg string) bool {
+	Logger.Question(msg)
+
+	var response string
+	_, err := fmt.Scanln(&response)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ok := []string{"y", "Y", "yes", "Yes", "YES"}
+
+	if StringContains(ok, response) {
+		return true
+	}
+	return false
 }
