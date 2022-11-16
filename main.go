@@ -52,7 +52,7 @@ func main() {
 			},
 			{
 				Name:  "clear-cache",
-				Usage: "Clear cache",
+				Usage: "Clear cache used in \"pull\" command",
 				Action: func(*cli.Context) error {
 					API.ClearCache()
 					return nil

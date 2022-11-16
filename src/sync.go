@@ -73,19 +73,43 @@ func PullRemoteConfigs(argFilter string) {
 		srcFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 
 		if _, err := os.Stat(srcFilePath); errors.Is(err, os.ErrNotExist) {
-			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file not found. Please push the config file before pulling.", configPathToSync, MacSyncConfigsFile))
+			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.\nEnsure to push the config file before pulling.", configPathToSync, MacSyncConfigsFile))
 			continue
 		}
 
 		dstPath := HandleRelativePath(configPathToSync, nil)
+		selectedFilePaths := []string{}
 
-		if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
-			err = os.RemoveAll(dstPath)
-			Utils.PanicIfErr(err)
+		if Flag_OverWrite {
+			if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
+				err = os.RemoveAll(dstPath)
+				Utils.PanicIfErr(err)
+			}
+
+			CopyConfigs(srcFilePath, dstPath)
+			selectedFilePaths = append(selectedFilePaths, configPathToSync)
+		} else {
+			if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
+				CopyConfigs(dstPath, srcFilePath)
+				ShowDiff(tempPath, srcFilePath)
+				Logger.Question(fmt.Sprintf("\"%s\" Update? (Y/N)", dstPath))
+
+				if yes := Utils.EnterYesNoQuestion(); yes {
+					GitReset(tempPath, srcFilePath)
+					err = os.RemoveAll(dstPath)
+					Utils.PanicIfErr(err)
+					CopyConfigs(srcFilePath, dstPath)
+					selectedFilePaths = append(selectedFilePaths, configPathToSync)
+				}
+			} else {
+				CopyConfigs(srcFilePath, dstPath)
+				selectedFilePaths = append(selectedFilePaths, configPathToSync)
+			}
 		}
 
-		CopyConfigs(srcFilePath, dstPath)
-		Logger.Success(fmt.Sprintf("\"%s\" updated.", configPathToSync))
+		for _, selectedFilePath := range selectedFilePaths {
+			Logger.Success(fmt.Sprintf("\"%s\" updated.", selectedFilePath))
+		}
 	}
 
 	if _, err := os.Stat(tempPath); errors.Is(err, os.ErrNotExist) {

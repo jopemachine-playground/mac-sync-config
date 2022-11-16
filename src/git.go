@@ -55,7 +55,6 @@ func GitAddFile(cwd string, filePath string) {
 func GitCommit(cwd string) {
 	gitCommitCmd := exec.Command("git", "commit", "--author", "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>", "--allow-empty", "-m", "Commited_by_mac-sync-config")
 	gitCommitCmd.Dir = cwd
-
 	output, err := gitCommitCmd.CombinedOutput()
 	Utils.PanicIfErrWithOutput(string(output), err)
 }
@@ -70,6 +69,7 @@ func GitPush(cwd string) {
 	Utils.PanicIfErr(err)
 }
 
+// TODO: Below command does not handle binary file properly.
 func IsUpdated(cwd string, filePath string) bool {
 	gitStatusCmd := exec.Command("git", "status", "-s", filePath)
 	gitStatusCmd.Dir = cwd
@@ -88,19 +88,15 @@ func IsUpdated(cwd string, filePath string) bool {
 func ShowDiff(cwd string, filePath string) {
 	gitDiffCmd := exec.Command("git", "diff", filePath)
 	gitDiffCmd.Dir = cwd
-
 	gitDiffCmd.Stdout = os.Stdout
 	gitDiffCmd.Stderr = os.Stderr
 	err := gitDiffCmd.Run()
 	Utils.PanicIfErr(err)
 }
 
-func ShowDiffTwoFile(cwd string, filePath string, filePath2 string) {
-	gitDiffCmd := exec.Command("git", "diff", filePath, filePath2)
-	gitDiffCmd.Dir = cwd
-
-	gitDiffCmd.Stdout = os.Stdout
-	gitDiffCmd.Stderr = os.Stderr
-	err := gitDiffCmd.Run()
-	Utils.PanicIfErr(err)
+func GitReset(cwd string, filePath string) {
+	gitResetCmd := exec.Command("git", "checkout", "--", filePath)
+	gitResetCmd.Dir = cwd
+	output, err := gitResetCmd.CombinedOutput()
+	Utils.PanicIfErrWithOutput(string(output), err)
 }
