@@ -19,27 +19,15 @@ func replaceUserName(path string) string {
 	return path
 }
 
-func replaceMagicStr(path string) string {
-	if strings.HasPrefix(path, "/Users/") {
-		return strings.Replace(path, fmt.Sprintf("/Users/%s", userProfileMagicStr), fmt.Sprintf("/Users/%s", Utils.GetCurrentUserName()), 1)
-	}
-
-	return path
-}
-
 // when pathHandlingType is nil, it just return abs path
 // when pathHandlingType is true, it returns str replaced userName with magic string
 // when pathHandlingType is false, it returns str replaced magic string with userName
-func HandleRelativePath(path string, pathHandlingType *bool) string {
+func HandleRelativePath(path string, shouldReplaceUserName bool) string {
 	usr, _ := user.Current()
 	dir := usr.HomeDir
 
-	if pathHandlingType != nil {
-		if *pathHandlingType == true {
-			dir = replaceUserName(dir)
-		} else if *pathHandlingType == false {
-			dir = replaceMagicStr(dir)
-		}
+	if shouldReplaceUserName {
+		dir = replaceUserName(dir)
 	}
 
 	if path == "~" {

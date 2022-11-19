@@ -78,7 +78,7 @@ func scanPreference(config *Preference) {
 }
 
 func ReadPreference() Preference {
-	preferenceDirPath := HandleRelativePath(PreferencePath, nil)
+	preferenceDirPath := HandleRelativePath(PreferencePath, false)
 
 	var config Preference
 
@@ -127,7 +127,7 @@ func ReadPreference() Preference {
 }
 
 func ReadConfigFileLastChanged() map[string]string {
-	configFileLastChangedCachePath := HandleRelativePath(ConfigFileLastChangedCachePath, nil)
+	configFileLastChangedCachePath := HandleRelativePath(ConfigFileLastChangedCachePath, false)
 
 	if _, err := os.Stat(configFileLastChangedCachePath); errors.Is(err, os.ErrNotExist) {
 		return make(map[string]string)
@@ -145,8 +145,8 @@ func ReadConfigFileLastChanged() map[string]string {
 }
 
 func WriteConfigFileLastChanged(lastChanged map[string]string) {
-	cacheDir := HandleRelativePath(CachePath, nil)
-	configFileLastChangedCachePath := HandleRelativePath(ConfigFileLastChangedCachePath, nil)
+	cacheDir := HandleRelativePath(CachePath, false)
+	configFileLastChangedCachePath := HandleRelativePath(ConfigFileLastChangedCachePath, false)
 
 	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(cacheDir, os.ModePerm)
@@ -163,7 +163,7 @@ func WriteConfigFileLastChanged(lastChanged map[string]string) {
 }
 
 func ClearCache() {
-	configFileLastChangedCachePath := HandleRelativePath(ConfigFileLastChangedCachePath, nil)
+	configFileLastChangedCachePath := HandleRelativePath(ConfigFileLastChangedCachePath, false)
 
 	err := os.Remove(configFileLastChangedCachePath)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {

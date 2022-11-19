@@ -69,7 +69,7 @@ func PullRemoteConfigs(argFilter string) {
 			continue
 		}
 
-		absConfigPathToSync := HandleRelativePath(configPathToSync, BoolPointer(true))
+		absConfigPathToSync := HandleRelativePath(configPathToSync, true)
 		srcFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 
 		if _, err := os.Stat(srcFilePath); errors.Is(err, os.ErrNotExist) {
@@ -77,7 +77,7 @@ func PullRemoteConfigs(argFilter string) {
 			continue
 		}
 
-		dstPath := HandleRelativePath(configPathToSync, nil)
+		dstPath := HandleRelativePath(configPathToSync, false)
 		selectedFilePaths := []string{}
 
 		if Flag_OverWrite {
@@ -133,9 +133,9 @@ func PushConfigFiles() {
 
 	for _, configPathToSync := range configs.ConfigPathsToSync {
 		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
-		absConfigPathToSync := HandleRelativePath(configPathToSync, nil)
+		absConfigPathToSync := HandleRelativePath(configPathToSync, false)
 
-		dstFilePath := fmt.Sprintf("%s%s", configRootPath, HandleRelativePath(configPathToSync, BoolPointer(true)))
+		dstFilePath := fmt.Sprintf("%s%s", configRootPath, HandleRelativePath(configPathToSync, false))
 
 		// Delete files for update if the files already exist
 		if _, err := os.Stat(dstFilePath); !errors.Is(err, os.ErrNotExist) {
