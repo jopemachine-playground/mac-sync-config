@@ -158,16 +158,19 @@ func PushConfigFiles() {
 		selectedFilePaths = updatedFilePaths
 	} else {
 		for _, updatedFilePath := range updatedFilePaths {
-			if haveDiff := IsUpdated(tempPath, updatedFilePath.convertedPath); haveDiff {
-				ShowDiff(tempPath, updatedFilePath.convertedPath)
+			// if haveDiff := IsUpdated(tempPath, updatedFilePath.convertedPath); haveDiff {
+			// 	ShowDiff(tempPath, updatedFilePath.convertedPath)
 
-				Logger.NewLine()
-				Logger.Question("Update? (Y/N)")
-				if yes := Utils.EnterYesNoQuestion(); yes {
-					GitAddFile(tempPath, updatedFilePath.convertedPath)
-					selectedFilePaths = append(selectedFilePaths, updatedFilePath)
-				}
-			}
+			// 	Logger.NewLine()
+			// 	Logger.Question("Update? (Y/N)")
+			// 	if yes := Utils.EnterYesNoQuestion(); yes {
+		// 		GitAddFile(tempPath, updatedFilePath.convertedPath)
+			// 		selectedFilePaths = append(selectedFilePaths, updatedFilePath)
+			// 	}
+			// }
+
+			GitAddPatchFile(tempPath, updatedFilePath.convertedPath)
+			selectedFilePaths = append(selectedFilePaths, updatedFilePath)
 
 			Logger.NewLine()
 		}

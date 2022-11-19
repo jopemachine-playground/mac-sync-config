@@ -52,6 +52,13 @@ func GitAddFile(cwd string, filePath string) {
 	Utils.PanicIfErrWithOutput(string(output), err)
 }
 
+func GitAddPatchFile(cwd string, filePath string) {
+	gitAddCmd := exec.Command("git", "add", "-p" , filePath)
+	gitAddCmd.Dir = cwd
+	output, err := gitAddCmd.CombinedOutput()
+	Utils.PanicIfErrWithOutput(string(output), err)
+}
+
 func GitCommit(cwd string) {
 	gitCommitCmd := exec.Command("git", "commit", "--author", "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>", "--allow-empty", "-m", "Commited_by_mac-sync-config")
 	gitCommitCmd.Dir = cwd
