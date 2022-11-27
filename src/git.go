@@ -84,7 +84,7 @@ func GitPush(cwd string) {
 }
 
 func GitShowDiff(cwd string, filePath string) {
-	Logger.Info(fmt.Sprintf("%s\nFull path: %s\n", color.MagentaString(path.Base(filePath)), color.HiBlackString(filePath)))
+	Logger.Info(fmt.Sprintf("Diff of %s\n", color.MagentaString(path.Base(filePath))))
 	gitShowDiffCmd := exec.Command("git", "diff", filePath)
 	gitShowDiffCmd.Dir = cwd
 	gitShowDiffCmd.Stdout = os.Stdout

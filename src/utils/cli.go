@@ -1,15 +1,21 @@
 package utils
 
 import (
+	"os"
 	"strings"
 
 	"github.com/eiannone/keyboard"
 )
 
 func ScanValue() string {
-	char, _, err := keyboard.GetSingleKey()
+	char, key, err := keyboard.GetSingleKey()
 	PanicIfErr(err)
-	return string(char)
+	response := string(char)
+	if key == keyboard.KeyEsc || strings.ToLower(response) == "q" || key == keyboard.KeyCtrlC {
+		os.Exit(0)
+	}
+
+	return response
 }
 
 func EnterYesNoQuestion() bool {

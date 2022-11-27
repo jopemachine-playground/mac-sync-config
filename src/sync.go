@@ -6,11 +6,14 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 
 	Utils "github.com/jopemachine/mac-sync-config/src/utils"
+
 	"gopkg.in/yaml.v3"
+	"github.com/fatih/color"
 )
 
 type Path struct {
@@ -69,7 +72,7 @@ func PullRemoteConfigs(argFilter string) {
 			continue
 		}
 
-		absConfigPathToSync := RelativePathToAbs(configPathToSync, true)
+		absConfigPathToSync := ReplaceUserName(RelativePathToAbs(configPathToSync))
 		srcFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 
 		if _, err := os.Stat(srcFilePath); errors.Is(err, os.ErrNotExist) {
@@ -79,7 +82,7 @@ func PullRemoteConfigs(argFilter string) {
 			continue
 		}
 
-		dstPath := RelativePathToAbs(configPathToSync, false)
+		dstPath := RelativePathToAbs(configPathToSync)
 		selectedFilePaths := []string{}
 
 		if Flag_OverWrite {
@@ -94,7 +97,8 @@ func PullRemoteConfigs(argFilter string) {
 			if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
 				CopyConfigs(dstPath, srcFilePath)
 				GitShowDiff(tempPath, srcFilePath)
-				Logger.Question(fmt.Sprintf("\"%s\" Press 'y' for adding the file, 'n' to ignore", dstPath))
+				Logger.Question(color.CyanString(fmt.Sprintf("Press 'y' to update '%s', 'n' to ignore.", path.Base(dstPath))))
+				Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", dstPath)))
 
 				if yes := Utils.EnterYesNoQuestion(); yes {
 					GitReset(tempPath, srcFilePath)
@@ -138,9 +142,9 @@ func PushConfigFiles() {
 
 	for _, configPathToSync := range configs.ConfigPathsToSync {
 		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
-		absSrcConfigPathToSync := RelativePathToAbs(configPathToSync, false)
+		absSrcConfigPathToSync := RelativePathToAbs(configPathToSync)
 
-		dstFilePath := fmt.Sprintf("%s%s", configRootPath, RelativePathToAbs(configPathToSync, true))
+		dstFilePath := fmt.Sprintf("%s%s", configRootPath, ReplaceUserName(RelativePathToAbs(configPathToSync)))
 
 		// Delete files for update if the files already exist
 		if _, err := os.Stat(dstFilePath); !errors.Is(err, os.ErrNotExist) {
@@ -168,7 +172,7 @@ func PushConfigFiles() {
 			if haveDiff := IsUpdated(tempPath, updatedFilePath.convertedPath); haveDiff {
 				GitShowDiff(tempPath, updatedFilePath.convertedPath)
 
-				Logger.Question("Press 'y' for adding the file, 'n' to ignore, 'p' for patching")
+				Logger.Question(color.CyanString("Press 'y' for adding the file, 'n' to ignore, 'p' for patching."))
 				userRes := Utils.ConfigAddQuestion()
 
 				if userRes != Utils.IGNORE {

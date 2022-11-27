@@ -11,7 +11,7 @@ import (
 
 const userProfileMagicStr = "USER_PROFILE"
 
-func replaceUserName(path string) string {
+func ReplaceUserName(path string) string {
 	if strings.HasPrefix(path, "/Users/") {
 		return strings.Replace(path, fmt.Sprintf("/Users/%s", Utils.GetCurrentUserName()), fmt.Sprintf("/Users/%s", userProfileMagicStr), 1)
 	}
@@ -20,13 +20,9 @@ func replaceUserName(path string) string {
 }
 
 // when pathHandlingType is true, it returns str replaced userName with magic string
-func RelativePathToAbs(path string, shouldReplaceUserName bool) string {
+func RelativePathToAbs(path string) string {
 	usr, _ := user.Current()
 	dir := usr.HomeDir
-
-	if shouldReplaceUserName {
-		dir = replaceUserName(dir)
-	}
 
 	if path == "~" {
 		path = dir
