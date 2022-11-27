@@ -23,11 +23,11 @@ func CopyConfigs(targetFilePath string, dstFilePath string) {
 
 	mkdirCmd := exec.Command("mkdir", "-p", dirPath)
 	output, err := mkdirCmd.CombinedOutput()
-	Utils.PanicIfErrWithOutput(string(output), err)
+	Utils.PanicIfErrWithMsg(string(output), err)
 
 	cpCmd := exec.Command("cp", "-fR", targetFilePath, dstFilePath)
 	output, err = cpCmd.CombinedOutput()
-	Utils.PanicIfErrWithOutput(string(output), err)
+	Utils.PanicIfErrWithMsg(string(output), err)
 }
 
 func ReadMacSyncConfigFile(filepath string) (ConfigInfo, error) {
@@ -48,14 +48,14 @@ func ReadMacSyncConfigFile(filepath string) (ConfigInfo, error) {
 }
 
 func PullRemoteConfigs(argFilter string) {
-	remoteCommitHashId := FetchRemoteConfigCommitHashId()
+	remoteCommitHashId := GitGetRemoteConfigHashId()
 	configFileLastChanged := ReadConfigFileLastChanged()
 
 	if configFileLastChanged["remote-commit-hash-id"] == remoteCommitHashId {
 		Logger.Info("Config files already up to date.")
 	}
 
-	tempPath := CloneMacSyncConfigRepository()
+	tempPath := GitCloneConfigsRepository()
 	configs, err := ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MacSyncConfigsFile))
 
 	Utils.PanicIfErr(err)
@@ -69,15 +69,17 @@ func PullRemoteConfigs(argFilter string) {
 			continue
 		}
 
-		absConfigPathToSync := HandleRelativePath(configPathToSync, true)
+		absConfigPathToSync := RelativePathToAbs(configPathToSync, true)
 		srcFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 
 		if _, err := os.Stat(srcFilePath); errors.Is(err, os.ErrNotExist) {
 			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.\nEnsure to push the config file before pulling.", configPathToSync, MacSyncConfigsFile))
+			Utils.WaitResponse()
+			Logger.ClearConsole()
 			continue
 		}
 
-		dstPath := HandleRelativePath(configPathToSync, false)
+		dstPath := RelativePathToAbs(configPathToSync, false)
 		selectedFilePaths := []string{}
 
 		if Flag_OverWrite {
@@ -91,8 +93,8 @@ func PullRemoteConfigs(argFilter string) {
 		} else {
 			if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
 				CopyConfigs(dstPath, srcFilePath)
-				ShowDiff(tempPath, srcFilePath)
-				Logger.Question(fmt.Sprintf("\"%s\" Update? (Y/N)", dstPath))
+				GitShowDiff(tempPath, srcFilePath)
+				Logger.Question(fmt.Sprintf("\"%s\" Press 'y' for adding the file, 'n' to ignore", dstPath))
 
 				if yes := Utils.EnterYesNoQuestion(); yes {
 					GitReset(tempPath, srcFilePath)
@@ -101,6 +103,8 @@ func PullRemoteConfigs(argFilter string) {
 					CopyConfigs(srcFilePath, dstPath)
 					selectedFilePaths = append(selectedFilePaths, configPathToSync)
 				}
+
+				Logger.ClearConsole()
 			} else {
 				CopyConfigs(srcFilePath, dstPath)
 				selectedFilePaths = append(selectedFilePaths, configPathToSync)
@@ -119,12 +123,13 @@ func PullRemoteConfigs(argFilter string) {
 	if argFilter == "" {
 		configFileLastChanged["remote-commit-hash-id"] = remoteCommitHashId
 		WriteConfigFileLastChanged(configFileLastChanged)
-		Logger.Info("Local config files are updated. Some changes might require to reboot to apply.")
 	}
+
+	Logger.Info("Local config files are updated successfully.\nNote that Some changes might require to reboot to apply.")
 }
 
 func PushConfigFiles() {
-	tempPath := CloneMacSyncConfigRepository()
+	tempPath := GitCloneConfigsRepository()
 	configs, err := ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MacSyncConfigsFile))
 	Utils.PanicIfErr(err)
 
@@ -133,9 +138,9 @@ func PushConfigFiles() {
 
 	for _, configPathToSync := range configs.ConfigPathsToSync {
 		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
-		absConfigPathToSync := HandleRelativePath(configPathToSync, false)
+		absSrcConfigPathToSync := RelativePathToAbs(configPathToSync, false)
 
-		dstFilePath := fmt.Sprintf("%s%s", configRootPath, HandleRelativePath(configPathToSync, false))
+		dstFilePath := fmt.Sprintf("%s%s", configRootPath, RelativePathToAbs(configPathToSync, true))
 
 		// Delete files for update if the files already exist
 		if _, err := os.Stat(dstFilePath); !errors.Is(err, os.ErrNotExist) {
@@ -143,46 +148,54 @@ func PushConfigFiles() {
 			Utils.PanicIfErr(err)
 		}
 
-		if _, err := os.Stat(absConfigPathToSync); errors.Is(err, os.ErrNotExist) {
+		if _, err := os.Stat(absSrcConfigPathToSync); errors.Is(err, os.ErrNotExist) {
 			Logger.Warning(fmt.Sprintf("\"%s\" not found in the local computer.", configPathToSync))
+			Utils.WaitResponse()
+			Logger.ClearConsole()
 			continue
 		}
 
-		CopyConfigs(absConfigPathToSync, dstFilePath)
+		CopyConfigs(absSrcConfigPathToSync, dstFilePath)
 		Utils.PanicIfErr(err)
 		updatedFilePaths = append(updatedFilePaths, path{configPathToSync, dstFilePath})
 	}
 
 	if Flag_OverWrite {
-		GitAddCwd(tempPath)
+		GitAddAll(tempPath)
 		selectedFilePaths = updatedFilePaths
 	} else {
 		for _, updatedFilePath := range updatedFilePaths {
-			// if haveDiff := IsUpdated(tempPath, updatedFilePath.convertedPath); haveDiff {
-			// 	ShowDiff(tempPath, updatedFilePath.convertedPath)
+			if haveDiff := IsUpdated(tempPath, updatedFilePath.convertedPath); haveDiff {
+				GitShowDiff(tempPath, updatedFilePath.convertedPath)
 
-			// 	Logger.NewLine()
-			// 	Logger.Question("Update? (Y/N)")
-			// 	if yes := Utils.EnterYesNoQuestion(); yes {
-		// 		GitAddFile(tempPath, updatedFilePath.convertedPath)
-			// 		selectedFilePaths = append(selectedFilePaths, updatedFilePath)
-			// 	}
-			// }
+				Logger.Question("Press 'y' for adding the file, 'n' to ignore, 'p' for patching")
+				userRes := Utils.ConfigAddQuestion()
 
-			GitAddPatchFile(tempPath, updatedFilePath.convertedPath)
-			selectedFilePaths = append(selectedFilePaths, updatedFilePath)
+				if userRes != Utils.IGNORE {
+					selectedFilePaths = append(selectedFilePaths, updatedFilePath)
+				}
 
-			Logger.NewLine()
+				if userRes == Utils.PATCH {
+					GitPatchFile(tempPath, updatedFilePath.convertedPath)
+				} else if userRes == Utils.ADD {
+					GitAddFile(tempPath, updatedFilePath.convertedPath)
+				}
+
+				Logger.ClearConsole()
+			}
 		}
 	}
+
+	Logger.NewLine()
 
 	for _, selectedFilePath := range selectedFilePaths {
 		Logger.Success(fmt.Sprintf("\"%s\" updated.", selectedFilePath.originalPath))
 	}
 
+	Logger.NewLine()
 	GitCommit(tempPath)
 	GitPush(tempPath)
 
-	Logger.Info("Config files updated successfully.")
+	Logger.Info("Config files pushed successfully.")
 	os.RemoveAll(tempPath)
 }

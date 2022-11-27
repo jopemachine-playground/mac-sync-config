@@ -19,10 +19,8 @@ func replaceUserName(path string) string {
 	return path
 }
 
-// when pathHandlingType is nil, it just return abs path
 // when pathHandlingType is true, it returns str replaced userName with magic string
-// when pathHandlingType is false, it returns str replaced magic string with userName
-func HandleRelativePath(path string, shouldReplaceUserName bool) string {
+func RelativePathToAbs(path string, shouldReplaceUserName bool) string {
 	usr, _ := user.Current()
 	dir := usr.HomeDir
 

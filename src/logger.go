@@ -39,5 +39,10 @@ func (logger loggerType) Warning(msg string) {
 }
 
 func (logger loggerType) Question(msg string) {
-	Logger.Log(fmt.Sprintf("%s %s", color.GreenString("?"), color.GreenString(msg)))
+	Logger.Log(fmt.Sprintf("%s %s", color.GreenString("?"), msg))
+}
+
+// Warning: It might not be cross-platform
+func (logger loggerType) ClearConsole() {
+	fmt.Print("\033[H\033[2J")
 }

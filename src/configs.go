@@ -58,34 +58,34 @@ type Preference struct {
 
 func scanPreference(config *Preference) {
 	Logger.Info("Please enter some information for accessing your Github repository.")
-	Logger.Info("This information will be stored in your keychain")
+	Logger.Info("This information will be stored in your keychain.")
 	Logger.NewLine()
 
-	Logger.Question("Enter your Github id:")
+	Logger.Question("Enter your Github ID:")
 	ghId := bufio.NewScanner(os.Stdin)
 	ghId.Scan()
 	config.GithubId = ghId.Text()
 
-	Logger.Question("Enter your Github access token:")
+	Logger.Question("Enter your Github Access Token:")
 	ghToken := bufio.NewScanner(os.Stdin)
 	ghToken.Scan()
 	config.GithubToken = ghToken.Text()
 
-	Logger.Question("Enter a Git repository name for saving mac-sync-config's configuration files:")
+	Logger.Question("Enter Git repository name for saving the mac-sync-config's configuration files:")
 	repoName := bufio.NewScanner(os.Stdin)
 	repoName.Scan()
 	config.MacSyncConfigGitRepositoryName = repoName.Text()
 }
 
 func ReadPreference() Preference {
-	preferenceDirPath := HandleRelativePath(PreferencePath, false)
+	preferenceDirPath := RelativePathToAbs(PreferencePath, false)
 
 	var config Preference
 
 	dat, err := keychain.GetGenericPassword("Mac-sync-config", "jopemachine", "Mac-sync-config", "org.jopemachine")
 
 	// If not exist, create new preference config file
-	if err == keychain.ErrorNoSuchKeychain {
+	if len(dat) == 0 {
 		err := os.Mkdir(preferenceDirPath, os.ModePerm)
 		if err != nil && !errors.Is(err, os.ErrExist) {
 			panic(err)
@@ -115,19 +115,20 @@ func ReadPreference() Preference {
 
 		Utils.PanicIfErr(err)
 
-		Logger.Success(fmt.Sprintf("mac-sync-config's configurations are saved successfully on the keychain."))
+		Logger.Success(fmt.Sprintf("mac-sync-config's configuration is saved successfully on the keychain.\n"))
 	} else if err != nil {
 		println(err)
+		Utils.PanicIfErr(err)
 	} else {
 		err = json.Unmarshal(dat, &config)
-		Utils.PanicIfErr(err)
+		Utils.PanicIfErrWithMsg("Json data malformed. Please delete and remake the keychain", err)
 	}
 
 	return config
 }
 
 func ReadConfigFileLastChanged() map[string]string {
-	configFileLastChangedCachePath := HandleRelativePath(ConfigFileLastChangedCachePath, false)
+	configFileLastChangedCachePath := RelativePathToAbs(ConfigFileLastChangedCachePath, false)
 
 	if _, err := os.Stat(configFileLastChangedCachePath); errors.Is(err, os.ErrNotExist) {
 		return make(map[string]string)
@@ -145,8 +146,8 @@ func ReadConfigFileLastChanged() map[string]string {
 }
 
 func WriteConfigFileLastChanged(lastChanged map[string]string) {
-	cacheDir := HandleRelativePath(CachePath, false)
-	configFileLastChangedCachePath := HandleRelativePath(ConfigFileLastChangedCachePath, false)
+	cacheDir := RelativePathToAbs(CachePath, false)
+	configFileLastChangedCachePath := RelativePathToAbs(ConfigFileLastChangedCachePath, false)
 
 	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
 		err := os.Mkdir(cacheDir, os.ModePerm)
@@ -163,7 +164,7 @@ func WriteConfigFileLastChanged(lastChanged map[string]string) {
 }
 
 func ClearCache() {
-	configFileLastChangedCachePath := HandleRelativePath(ConfigFileLastChangedCachePath, false)
+	configFileLastChangedCachePath := RelativePathToAbs(ConfigFileLastChangedCachePath, false)
 
 	err := os.Remove(configFileLastChangedCachePath)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
