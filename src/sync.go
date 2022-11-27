@@ -13,7 +13,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type path struct {
+type Path struct {
 	originalPath  string
 	convertedPath string
 }
@@ -133,8 +133,8 @@ func PushConfigFiles() {
 	configs, err := ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MacSyncConfigsFile))
 	Utils.PanicIfErr(err)
 
-	var selectedFilePaths = []path{}
-	var updatedFilePaths = []path{}
+	var selectedFilePaths = []Path{}
+	var updatedFilePaths = []Path{}
 
 	for _, configPathToSync := range configs.ConfigPathsToSync {
 		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
@@ -157,7 +157,7 @@ func PushConfigFiles() {
 
 		CopyConfigs(absSrcConfigPathToSync, dstFilePath)
 		Utils.PanicIfErr(err)
-		updatedFilePaths = append(updatedFilePaths, path{configPathToSync, dstFilePath})
+		updatedFilePaths = append(updatedFilePaths, Path{configPathToSync, dstFilePath})
 	}
 
 	if Flag_OverWrite {

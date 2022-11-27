@@ -117,7 +117,6 @@ func ReadPreference() Preference {
 
 		Logger.Success(fmt.Sprintf("mac-sync-config's configuration is saved successfully on the keychain.\n"))
 	} else if err != nil {
-		println(err)
 		Utils.PanicIfErr(err)
 	} else {
 		err = json.Unmarshal(dat, &config)

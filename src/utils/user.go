@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"log"
 	"os"
 	"os/user"
 )
@@ -12,9 +11,6 @@ func IsRootUser() bool {
 
 func GetCurrentUserName() string {
 	user, err := user.Current()
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-
+	PanicIfErr(err)
 	return user.Username
 }

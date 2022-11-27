@@ -1,27 +1,20 @@
 package utils
 
 import (
-	"fmt"
 	"strings"
+
+	"github.com/eiannone/keyboard"
 )
 
 func ScanValue() string {
-	var response string
-	if _, err := fmt.Scanln(&response); err != nil {
-		if strings.Contains(err.Error(), "unexpected newline") {
-			return "y"
-		} else {
-			PanicIfErr(err)
-		}
-	}
-
-	return response
+	char, _, err := keyboard.GetSingleKey()
+	PanicIfErr(err)
+	return string(char)
 }
 
 func EnterYesNoQuestion() bool {
 	response := ScanValue()
-	ok := []string{"y", "Y", "yes", "Yes", "YES"}
-	return StringContains(ok, response)
+	return strings.ToLower(response) == "y"
 }
 
 func WaitResponse() {
@@ -38,12 +31,10 @@ const (
 
 func ConfigAddQuestion() ConfigAddQuestionResult {
 	response := ScanValue()
-	ok := []string{"y", "Y", "yes", "Yes", "YES"}
-	patch := []string{"p", "P", "Patch", "patch"}
 
-	if StringContains(ok, response) {
+	if strings.ToLower(response) == "y" {
 		return ADD
-	} else if StringContains(patch, response) {
+	} else if strings.ToLower(response) == "p" {
 		return PATCH
 	}
 
