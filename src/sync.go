@@ -65,7 +65,7 @@ func PullRemoteConfigs(argFilter string) {
 
 	configPathsToSync := configs.ConfigPathsToSync
 
-	for _, configPathToSync := range configPathsToSync {
+	for configPathIdx, configPathToSync := range configPathsToSync {
 		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
 
 		if argFilter != "" && strings.Contains(filepath.Base(configPathToSync), argFilter) == false {
@@ -96,6 +96,9 @@ func PullRemoteConfigs(argFilter string) {
 		} else {
 			if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
 				CopyConfigs(dstPath, srcFilePath)
+				progressStr := fmt.Sprintf("[%d/%d]", configPathIdx + 1, len(configPathsToSync))
+				Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(srcFilePath))))
+
 				GitShowDiff(tempPath, srcFilePath)
 				Logger.Question(color.CyanString(fmt.Sprintf("Press 'y' to update '%s', 'n' to ignore.", path.Base(dstPath))))
 				Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", dstPath)))
@@ -137,8 +140,8 @@ func PushConfigFiles() {
 	configs, err := ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MacSyncConfigsFile))
 	Utils.PanicIfErr(err)
 
-	var selectedFilePaths = []Path{}
 	var updatedFilePaths = []Path{}
+	var selectedUpdatedFilePaths = []Path{}
 
 	for _, configPathToSync := range configs.ConfigPathsToSync {
 		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
@@ -161,45 +164,54 @@ func PushConfigFiles() {
 
 		CopyConfigs(absSrcConfigPathToSync, dstFilePath)
 		Utils.PanicIfErr(err)
-		updatedFilePaths = append(updatedFilePaths, Path{configPathToSync, dstFilePath})
+
+		if haveDiff := IsUpdated(tempPath, dstFilePath); haveDiff {
+			updatedFilePaths = append(updatedFilePaths, Path{configPathToSync, dstFilePath})
+		}
 	}
 
 	if Flag_OverWrite {
 		GitAddAll(tempPath)
-		selectedFilePaths = updatedFilePaths
+		selectedUpdatedFilePaths = updatedFilePaths
 	} else {
-		for _, updatedFilePath := range updatedFilePaths {
-			if haveDiff := IsUpdated(tempPath, updatedFilePath.convertedPath); haveDiff {
-				GitShowDiff(tempPath, updatedFilePath.convertedPath)
+		for fileIdx, updatedFilePath := range updatedFilePaths {
+			progressStr := fmt.Sprintf("[%d/%d]", fileIdx + 1, len(updatedFilePaths))
+			Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(updatedFilePath.convertedPath))))
+			GitShowDiff(tempPath, updatedFilePath.convertedPath)
 
-				Logger.Question(color.CyanString("Press 'y' for adding the file, 'n' to ignore, 'p' for patching."))
-				userRes := Utils.ConfigAddQuestion()
+			Logger.Question(color.CyanString("Press 'y' for adding the file, 'n' to ignore, 'p' for patching."))
+			userRes := Utils.ConfigAddQuestion()
 
-				if userRes != Utils.IGNORE {
-					selectedFilePaths = append(selectedFilePaths, updatedFilePath)
-				}
-
-				if userRes == Utils.PATCH {
-					GitPatchFile(tempPath, updatedFilePath.convertedPath)
-				} else if userRes == Utils.ADD {
-					GitAddFile(tempPath, updatedFilePath.convertedPath)
-				}
-
-				Logger.ClearConsole()
+			if userRes != Utils.IGNORE {
+				selectedUpdatedFilePaths = append(selectedUpdatedFilePaths, updatedFilePath)
 			}
+
+			if userRes == Utils.PATCH {
+				GitPatchFile(tempPath, updatedFilePath.convertedPath)
+			} else if userRes == Utils.ADD {
+				GitAddFile(tempPath, updatedFilePath.convertedPath)
+			}
+
+			Logger.ClearConsole()
 		}
 	}
 
 	Logger.NewLine()
 
-	for _, selectedFilePath := range selectedFilePaths {
+	for _, selectedFilePath := range selectedUpdatedFilePaths {
 		Logger.Success(fmt.Sprintf("\"%s\" updated.", selectedFilePath.originalPath))
 	}
 
 	Logger.NewLine()
-	GitCommit(tempPath)
-	GitPush(tempPath)
 
-	Logger.Info("Config files pushed successfully.")
+	if len(selectedUpdatedFilePaths) > 0 {
+		GitCommit(tempPath)
+		GitPush(tempPath)
+
+		Logger.Info("Config files pushed successfully.")
+	} else {
+		Logger.Info("No file pushed.")
+	}
+
 	os.RemoveAll(tempPath)
 }
