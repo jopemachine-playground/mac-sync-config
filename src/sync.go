@@ -96,11 +96,11 @@ func PushConfigFiles() {
 		selectedUpdatedFilePaths = updatedFilePaths
 	} else {
 		for fileIdx, updatedFilePath := range updatedFilePaths {
-			progressStr := fmt.Sprintf("[%d/%d]", fileIdx+1, len(updatedFilePaths))
+			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", fileIdx+1, len(updatedFilePaths)))
 			Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(updatedFilePath.convertedPath))))
 			Git.ShowDiff(tempPath, updatedFilePath.convertedPath)
 
-			Logger.Question(color.CyanString("Press 'y' for adding the file, 'n' to ignore, 'p' for patching."))
+			Logger.Question(color.New(color.FgCyan, color.Bold).Sprint("Press 'y' for adding the file, 'n' to ignore, 'p' for patching."))
 			userRes := Utils.ConfigAddQuestion()
 
 			if userRes != Utils.IGNORE {
@@ -193,11 +193,11 @@ func PullRemoteConfigs(argFilter string) {
 				dstPath,
 			})
 		} else {
-			progressStr := fmt.Sprintf("[%d/%d]", configPathIdx+1, len(configPathsToSync))
+			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", configPathIdx+1, len(configPathsToSync)))
 			Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(srcFilePath))))
 
 			Git.ShowDiff(tempPath, srcFilePath)
-			Logger.Question(color.CyanString(fmt.Sprintf("Press 'y' to update '%s', 'n' to ignore.", path.Base(dstPath))))
+			Logger.Question(color.New(color.FgCyan, color.Bold).Sprintf("Press 'y' to update '%s', 'n' to ignore.", path.Base(dstPath)))
 			Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", dstPath)))
 
 			if yes := Utils.EnterYesNoQuestion(); yes {
