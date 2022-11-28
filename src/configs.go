@@ -84,6 +84,7 @@ func ReadPreference() Preference {
 
 	dat, err := keychain.GetGenericPassword("Mac-sync-config", "jopemachine", "Mac-sync-config", "org.jopemachine")
 
+	// TODO: Improve below error handling logic.
 	// If not exist, create new preference config file
 	if len(dat) == 0 {
 		scanPreference(&config)
