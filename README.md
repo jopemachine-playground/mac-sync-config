@@ -1,8 +1,20 @@
 # mac-sync-config
 
-Sync your config files between macs through Github.
+<img src="https://img.shields.io/github/license/jopemachine/mac-sync-config.svg" alt="License">
+
+Sync your config files between macs through your Github repository.
 
 I made this for resolving the [keeping the consistent configs issue](https://apple.stackexchange.com/questions/30966/how-can-i-keep-settings-consistent-between-macs) between mac.
+
+## Why?
+
+- No need to write any shell scripts to sync config files.
+
+- Easy to manage lots of config files using saving those to your Github repository.
+
+- Easy to check diffs between remote configs and local configs.
+
+- Easy to Edit your config files in your local, Github directly.
 
 ## How to set up
 
@@ -47,4 +59,4 @@ COMMANDS:
 
 ## Example
 
-- [dotfiles-macos](https://github.com/jopemachine/dotfiles-macos) - my config files
+- [mac-sync-configs](https://github.com/jopemachine/mac-sync-configs) - my config files
