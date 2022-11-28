@@ -171,3 +171,9 @@ func ClearCache() {
 	}
 	Logger.Success("Cache file cleared.")
 }
+
+func PrintConfig() {
+	resp, err := CreateMacSyncConfigRequest("mac-sync-configs.yaml")
+	Utils.PanicIfErr(err)
+	Logger.Log(resp.String())
+}

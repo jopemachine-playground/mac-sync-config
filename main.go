@@ -51,6 +51,14 @@ func main() {
 				},
 			},
 			{
+				Name:  "list",
+				Usage: "Show the configuration files list",
+				Action: func(*cli.Context) error {
+					API.PrintConfig()
+					return nil
+				},
+			},
+			{
 				Name:  "clear-cache",
 				Usage: "Clear cache used in \"pull\" command",
 				Action: func(*cli.Context) error {
