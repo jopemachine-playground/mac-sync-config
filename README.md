@@ -33,11 +33,15 @@ sync:
 
 ```
 NAME:
-   mac-sync-config - Sync specified programs and config files between macs using Git.
+   mac-sync-config - Sync the config files between macs through Github
+
+USAGE:
+   mac-sync-config command [command options] [arguments...]
 
 COMMANDS:
    push                 Push local config files to remote
    pull                 Pull configs from remote
+   list, ls             Show the configuration files list
    clear-cache          Clear cache
 ```
 

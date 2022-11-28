@@ -16,8 +16,9 @@ func main() {
 	}
 
 	app := &cli.App{
-		Name:  "mac-sync-config",
-		Usage: "Sync the config files between macs through Github",
+		Name:    "mac-sync-config",
+		Usage:   "Sync the config files between macs through Github",
+		Suggest: true,
 		Commands: []*cli.Command{
 			{
 				Name:  "push",
