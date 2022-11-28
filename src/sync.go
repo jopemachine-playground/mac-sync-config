@@ -16,12 +16,18 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Path struct {
+type PushPath struct {
 	originalPath  string
 	convertedPath string
 }
 
-func CopyConfigs(targetFilePath string, dstFilePath string) {
+type PullPath struct {
+	originalPath string
+	srcPath      string
+	dstPath      string
+}
+
+func CopyFiles(targetFilePath string, dstFilePath string) {
 	dirPath := filepath.Dir(dstFilePath)
 
 	mkdirCmd := exec.Command("mkdir", "-p", dirPath)
@@ -50,98 +56,13 @@ func ReadMacSyncConfigFile(filepath string) (ConfigInfo, error) {
 	return config, nil
 }
 
-func PullRemoteConfigs(argFilter string) {
-	remoteCommitHashId := Git.GetRemoteConfigHashId()
-	configFileLastChanged := ReadConfigFileLastChanged()
-
-	if configFileLastChanged["remote-commit-hash-id"] == remoteCommitHashId {
-		Logger.Info("Config files already up to date.")
-	}
-
-	tempPath := Git.CloneConfigsRepository()
-	configs, err := ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MAC_SYNC_CONFIGS_FILE))
-
-	Utils.PanicIfErr(err)
-
-	configPathsToSync := configs.ConfigPathsToSync
-
-	for configPathIdx, configPathToSync := range configPathsToSync {
-		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
-
-		if argFilter != "" && strings.Contains(filepath.Base(configPathToSync), argFilter) == false {
-			continue
-		}
-
-		absConfigPathToSync := ReplaceUserName(RelativePathToAbs(configPathToSync))
-		srcFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
-
-		if _, err := os.Stat(srcFilePath); errors.Is(err, os.ErrNotExist) {
-			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.\nEnsure to push the config file before pulling.", configPathToSync, MAC_SYNC_CONFIGS_FILE))
-			Utils.WaitResponse()
-			Logger.ClearConsole()
-			continue
-		}
-
-		dstPath := RelativePathToAbs(configPathToSync)
-		selectedFilePaths := []string{}
-
-		if Flag_OverWrite {
-			if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
-				err = os.RemoveAll(dstPath)
-				Utils.PanicIfErr(err)
-			}
-
-			CopyConfigs(srcFilePath, dstPath)
-			selectedFilePaths = append(selectedFilePaths, configPathToSync)
-		} else {
-			if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
-				CopyConfigs(dstPath, srcFilePath)
-				progressStr := fmt.Sprintf("[%d/%d]", configPathIdx+1, len(configPathsToSync))
-				Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(srcFilePath))))
-
-				Git.ShowDiff(tempPath, srcFilePath)
-				Logger.Question(color.CyanString(fmt.Sprintf("Press 'y' to update '%s', 'n' to ignore.", path.Base(dstPath))))
-				Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", dstPath)))
-
-				if yes := Utils.EnterYesNoQuestion(); yes {
-					Git.Reset(tempPath, srcFilePath)
-					err = os.RemoveAll(dstPath)
-					Utils.PanicIfErr(err)
-					CopyConfigs(srcFilePath, dstPath)
-					selectedFilePaths = append(selectedFilePaths, configPathToSync)
-				}
-
-				Logger.ClearConsole()
-			} else {
-				CopyConfigs(srcFilePath, dstPath)
-				selectedFilePaths = append(selectedFilePaths, configPathToSync)
-			}
-		}
-
-		for _, selectedFilePath := range selectedFilePaths {
-			Logger.Success(fmt.Sprintf("\"%s\" updated.", selectedFilePath))
-		}
-	}
-
-	if _, err := os.Stat(tempPath); errors.Is(err, os.ErrNotExist) {
-		os.Mkdir(tempPath, os.ModePerm)
-	}
-
-	if argFilter == "" {
-		configFileLastChanged["remote-commit-hash-id"] = remoteCommitHashId
-		WriteConfigFileLastChanged(configFileLastChanged)
-	}
-
-	Logger.Info("Local config files are updated successfully.\nNote that Some changes might require to reboot to apply.")
-}
-
 func PushConfigFiles() {
 	tempPath := Git.CloneConfigsRepository()
 	configs, err := ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MAC_SYNC_CONFIGS_FILE))
 	Utils.PanicIfErr(err)
 
-	var updatedFilePaths = []Path{}
-	var selectedUpdatedFilePaths = []Path{}
+	var updatedFilePaths = []PushPath{}
+	var selectedUpdatedFilePaths = []PushPath{}
 
 	for _, configPathToSync := range configs.ConfigPathsToSync {
 		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
@@ -162,11 +83,11 @@ func PushConfigFiles() {
 			continue
 		}
 
-		CopyConfigs(absSrcConfigPathToSync, dstFilePath)
+		CopyFiles(absSrcConfigPathToSync, dstFilePath)
 		Utils.PanicIfErr(err)
 
 		if haveDiff := Git.IsUpdated(tempPath, dstFilePath); haveDiff {
-			updatedFilePaths = append(updatedFilePaths, Path{configPathToSync, dstFilePath})
+			updatedFilePaths = append(updatedFilePaths, PushPath{configPathToSync, dstFilePath})
 		}
 	}
 
@@ -214,4 +135,102 @@ func PushConfigFiles() {
 	}
 
 	os.RemoveAll(tempPath)
+}
+
+func PullRemoteConfigs(argFilter string) {
+	remoteCommitHashId := Git.GetRemoteConfigHashId()
+	lastChangedConfig := ReadLastChanged()
+
+	if lastChangedConfig["remote-commit-hash-id"] == remoteCommitHashId {
+		Logger.Info("Config files already up to date.")
+	}
+
+	tempPath := Git.CloneConfigsRepository()
+	configs, err := ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MAC_SYNC_CONFIGS_FILE))
+
+	Utils.PanicIfErr(err)
+
+	configPathsToSync := configs.ConfigPathsToSync
+	selectedFilePaths := []PullPath{}
+	filteredConfigPathsToSync := []string{}
+
+	for _, configPathToSync := range configPathsToSync {
+		if argFilter != "" && !strings.Contains(filepath.Base(configPathToSync), argFilter) {
+			continue
+		}
+
+		filteredConfigPathsToSync = append(filteredConfigPathsToSync, configPathToSync)
+	}
+
+	for configPathIdx, configPathToSync := range filteredConfigPathsToSync {
+		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
+
+		absConfigPathToSync := ReplaceUserName(RelativePathToAbs(configPathToSync))
+		srcFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
+
+		if _, err := os.Stat(srcFilePath); errors.Is(err, os.ErrNotExist) {
+			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.\nEnsure to push the config file before pulling.", configPathToSync, MAC_SYNC_CONFIGS_FILE))
+			Utils.WaitResponse()
+			Logger.ClearConsole()
+			continue
+		}
+
+		dstPath := RelativePathToAbs(configPathToSync)
+
+		// To show diff, copy dstPath file to srcFilePath.
+		// This should be reset before copying from dstFile to srcFilePath.
+		CopyFiles(dstPath, srcFilePath)
+
+		if Flag_OverWrite {
+			if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
+				err = os.RemoveAll(dstPath)
+				Utils.PanicIfErr(err)
+			}
+
+			selectedFilePaths = append(selectedFilePaths, PullPath{
+				configPathToSync,
+				srcFilePath,
+				dstPath,
+			})
+		} else {
+			progressStr := fmt.Sprintf("[%d/%d]", configPathIdx+1, len(configPathsToSync))
+			Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(srcFilePath))))
+
+			Git.ShowDiff(tempPath, srcFilePath)
+			Logger.Question(color.CyanString(fmt.Sprintf("Press 'y' to update '%s', 'n' to ignore.", path.Base(dstPath))))
+			Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", dstPath)))
+
+			if yes := Utils.EnterYesNoQuestion(); yes {
+				selectedFilePaths = append(selectedFilePaths, PullPath{
+					configPathToSync,
+					srcFilePath,
+					dstPath,
+				})
+			}
+
+			Logger.ClearConsole()
+		}
+	}
+
+	for _, path := range selectedFilePaths {
+		Git.Reset(tempPath, path.srcPath)
+		if _, err := os.Stat(path.dstPath); !errors.Is(err, os.ErrNotExist) {
+			err = os.RemoveAll(path.dstPath)
+			Utils.PanicIfErr(err)
+		}
+		CopyFiles(path.srcPath, path.dstPath)
+		Logger.Success(fmt.Sprintf("\"%s\" updated.", path.originalPath))
+	}
+
+	if _, err := os.Stat(tempPath); errors.Is(err, os.ErrNotExist) {
+		os.Mkdir(tempPath, os.ModePerm)
+	}
+
+	// If 'argFilter' is not empty, same commit hash id should not be ignored.
+	if argFilter == "" {
+		lastChangedConfig["remote-commit-hash-id"] = remoteCommitHashId
+		WriteLastChangedConfigFile(lastChangedConfig)
+	}
+
+	Logger.Info("Local config files are updated successfully.\nNote that Some changes might require to reboot to apply.")
 }

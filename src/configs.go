@@ -26,7 +26,7 @@ var (
 )
 
 var (
-	PreferenceSingleton = ReadPreference()
+	PreferenceSingleton = GetPreference()
 )
 
 var (
@@ -79,7 +79,7 @@ func scanPreference(config *Preference) {
 	config.MacSyncConfigGitRepositoryName = repoName.Text()
 }
 
-func ReadPreference() Preference {
+func GetPreference() Preference {
 	var config Preference
 
 	dat, err := keychain.GetGenericPassword("Mac-sync-config", "jopemachine", "Mac-sync-config", "org.jopemachine")
@@ -113,7 +113,7 @@ func ReadPreference() Preference {
 
 		Logger.Success(fmt.Sprintf("mac-sync-config's configuration is saved successfully on the keychain.\n"))
 	} else if err != nil {
-		Utils.PanicIfErr(err)
+		panic(err)
 	} else {
 		err = json.Unmarshal(dat, &config)
 		Utils.PanicIfErrWithMsg("Json data malformed. Please delete and remake the keychain", err)
@@ -122,7 +122,7 @@ func ReadPreference() Preference {
 	return config
 }
 
-func ReadConfigFileLastChanged() map[string]string {
+func ReadLastChanged() map[string]string {
 	configFileLastChangedCachePath := RelativePathToAbs(ConfigFileLastChangedCachePath)
 
 	if _, err := os.Stat(configFileLastChangedCachePath); errors.Is(err, os.ErrNotExist) {
@@ -140,7 +140,7 @@ func ReadConfigFileLastChanged() map[string]string {
 	return lastChangedMap
 }
 
-func WriteConfigFileLastChanged(lastChanged map[string]string) {
+func WriteLastChangedConfigFile(lastChangedConfig map[string]string) {
 	cacheDir := RelativePathToAbs(CACHE_PATH)
 	configFileLastChangedCachePath := RelativePathToAbs(ConfigFileLastChangedCachePath)
 
@@ -151,7 +151,7 @@ func WriteConfigFileLastChanged(lastChanged map[string]string) {
 		os.Remove(configFileLastChangedCachePath)
 	}
 
-	bytesToWrite, err := json.Marshal(lastChanged)
+	bytesToWrite, err := json.Marshal(lastChangedConfig)
 	Utils.PanicIfErr(err)
 
 	err = ioutil.WriteFile(configFileLastChangedCachePath, bytesToWrite, os.ModePerm)
@@ -169,7 +169,5 @@ func ClearCache() {
 }
 
 func PrintConfig() {
-	resp, err := CreateMacSyncConfigRequest("mac-sync-configs.yaml")
-	Utils.PanicIfErr(err)
-	Logger.Log(resp.String())
+	Logger.Log(GetMacSyncConfigs())
 }
