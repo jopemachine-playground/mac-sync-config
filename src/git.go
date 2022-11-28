@@ -66,11 +66,19 @@ func GitPatchFile(cwd string, filePath string) {
 const GH_BOT_EMAIL = "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
 
 func GitCommit(cwd string) {
-	gitCommitCmd := exec.Command("git", "commit", "--author", GH_BOT_EMAIL, "--allow-empty", "-m", "Commited_by_mac-sync-config")
+	Logger.Info("Enter the commit message.")
+	gitCommitCmd := exec.Command("git", "commit", "--author", GH_BOT_EMAIL, "--allow-empty")
 	gitCommitCmd.Dir = cwd
 	gitCommitCmd.Env = append(gitCommitCmd.Env, "GIT_COMMITTER_NAME=\"Mac-sync-config\"")
-	output, err := gitCommitCmd.CombinedOutput()
-	Utils.PanicIfErrWithMsg(string(output), err)
+	gitCommitCmd.Env = append(gitCommitCmd.Env, "EDITOR=vim")
+	gitCommitCmd.Env = append(gitCommitCmd.Env, fmt.Sprintf("TERM=%s", os.Getenv("TERM")))
+	// TODO: Fix whitespace not working in the vim issue
+	gitCommitCmd.Stdin = os.Stdin
+	gitCommitCmd.Stdout = os.Stdout
+	gitCommitCmd.Stderr = os.Stderr
+	err := gitCommitCmd.Run()
+	Utils.PanicIfErr(err)
+	Logger.ClearConsole()
 }
 
 func GitPush(cwd string) {
