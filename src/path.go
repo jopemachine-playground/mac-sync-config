@@ -9,11 +9,11 @@ import (
 	Utils "github.com/jopemachine/mac-sync-config/src/utils"
 )
 
-const userProfileMagicStr = "USER_PROFILE"
+const USER_PROFILE_MAGIC_STR = "USER_PROFILE"
 
 func ReplaceUserName(path string) string {
 	if strings.HasPrefix(path, "/Users/") {
-		return strings.Replace(path, fmt.Sprintf("/Users/%s", Utils.GetCurrentUserName()), fmt.Sprintf("/Users/%s", userProfileMagicStr), 1)
+		return strings.Replace(path, fmt.Sprintf("/Users/%s", Utils.GetCurrentUserName()), fmt.Sprintf("/Users/%s", USER_PROFILE_MAGIC_STR), 1)
 	}
 
 	return path

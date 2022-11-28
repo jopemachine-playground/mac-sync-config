@@ -59,7 +59,7 @@ func PullRemoteConfigs(argFilter string) {
 	}
 
 	tempPath := Git.CloneConfigsRepository()
-	configs, err := ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MacSyncConfigsFile))
+	configs, err := ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MAC_SYNC_CONFIGS_FILE))
 
 	Utils.PanicIfErr(err)
 
@@ -76,7 +76,7 @@ func PullRemoteConfigs(argFilter string) {
 		srcFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 
 		if _, err := os.Stat(srcFilePath); errors.Is(err, os.ErrNotExist) {
-			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.\nEnsure to push the config file before pulling.", configPathToSync, MacSyncConfigsFile))
+			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.\nEnsure to push the config file before pulling.", configPathToSync, MAC_SYNC_CONFIGS_FILE))
 			Utils.WaitResponse()
 			Logger.ClearConsole()
 			continue
@@ -137,7 +137,7 @@ func PullRemoteConfigs(argFilter string) {
 
 func PushConfigFiles() {
 	tempPath := Git.CloneConfigsRepository()
-	configs, err := ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MacSyncConfigsFile))
+	configs, err := ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MAC_SYNC_CONFIGS_FILE))
 	Utils.PanicIfErr(err)
 
 	var updatedFilePaths = []Path{}

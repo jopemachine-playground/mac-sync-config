@@ -14,17 +14,15 @@ import (
 )
 
 const (
-	CachePath      = "~/Library/Caches/Mac-sync-config"
-	PreferencePath = "~/Library/Preferences/Mac-sync-config"
+	CACHE_PATH = "~/Library/Caches/Mac-sync-config"
 )
 
 const (
-	MacSyncConfigsFile = "mac-sync-configs.yaml"
+	MAC_SYNC_CONFIGS_FILE = "mac-sync-configs.yaml"
 )
 
 var (
-	ConfigFileLastChangedCachePath = strings.Join([]string{CachePath, "last-changed.json"}, "/")
-	PreferenceFilePath             = strings.Join([]string{PreferencePath, "preference.json"}, "/")
+	ConfigFileLastChangedCachePath = strings.Join([]string{CACHE_PATH, "last-changed.json"}, "/")
 )
 
 var (
@@ -82,19 +80,12 @@ func scanPreference(config *Preference) {
 }
 
 func ReadPreference() Preference {
-	preferenceDirPath := RelativePathToAbs(PreferencePath)
-
 	var config Preference
 
 	dat, err := keychain.GetGenericPassword("Mac-sync-config", "jopemachine", "Mac-sync-config", "org.jopemachine")
 
 	// If not exist, create new preference config file
 	if len(dat) == 0 {
-		err := os.Mkdir(preferenceDirPath, os.ModePerm)
-		if err != nil && !errors.Is(err, os.ErrExist) {
-			panic(err)
-		}
-
 		scanPreference(&config)
 		bytesToWrite, err := json.Marshal(config)
 		Utils.PanicIfErr(err)
@@ -149,7 +140,7 @@ func ReadConfigFileLastChanged() map[string]string {
 }
 
 func WriteConfigFileLastChanged(lastChanged map[string]string) {
-	cacheDir := RelativePathToAbs(CachePath)
+	cacheDir := RelativePathToAbs(CACHE_PATH)
 	configFileLastChangedCachePath := RelativePathToAbs(ConfigFileLastChangedCachePath)
 
 	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
