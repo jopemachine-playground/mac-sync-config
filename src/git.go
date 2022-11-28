@@ -63,9 +63,12 @@ func GitPatchFile(cwd string, filePath string) {
 	Utils.PanicIfErr(err)
 }
 
+const GH_BOT_EMAIL = "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+
 func GitCommit(cwd string) {
-	gitCommitCmd := exec.Command("git", "commit", "--author", "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>", "--allow-empty", "-m", "Commited_by_mac-sync-config")
+	gitCommitCmd := exec.Command("git", "commit", "--author", GH_BOT_EMAIL, "--allow-empty", "-m", "Commited_by_mac-sync-config")
 	gitCommitCmd.Dir = cwd
+	gitCommitCmd.Env = append(gitCommitCmd.Env, "GIT_COMMITTER_NAME=\"Mac-sync-config\"")
 	output, err := gitCommitCmd.CombinedOutput()
 	Utils.PanicIfErrWithMsg(string(output), err)
 }

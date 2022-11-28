@@ -12,8 +12,8 @@ import (
 
 	Utils "github.com/jopemachine/mac-sync-config/src/utils"
 
-	"gopkg.in/yaml.v3"
 	"github.com/fatih/color"
+	"gopkg.in/yaml.v3"
 )
 
 type Path struct {
@@ -96,7 +96,7 @@ func PullRemoteConfigs(argFilter string) {
 		} else {
 			if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
 				CopyConfigs(dstPath, srcFilePath)
-				progressStr := fmt.Sprintf("[%d/%d]", configPathIdx + 1, len(configPathsToSync))
+				progressStr := fmt.Sprintf("[%d/%d]", configPathIdx+1, len(configPathsToSync))
 				Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(srcFilePath))))
 
 				GitShowDiff(tempPath, srcFilePath)
@@ -175,7 +175,7 @@ func PushConfigFiles() {
 		selectedUpdatedFilePaths = updatedFilePaths
 	} else {
 		for fileIdx, updatedFilePath := range updatedFilePaths {
-			progressStr := fmt.Sprintf("[%d/%d]", fileIdx + 1, len(updatedFilePaths))
+			progressStr := fmt.Sprintf("[%d/%d]", fileIdx+1, len(updatedFilePaths))
 			Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(updatedFilePath.convertedPath))))
 			GitShowDiff(tempPath, updatedFilePath.convertedPath)
 

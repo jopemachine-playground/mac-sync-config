@@ -51,8 +51,9 @@ func main() {
 				},
 			},
 			{
-				Name:  "list",
-				Usage: "Show the configuration files list",
+				Name:    "list",
+				Aliases: []string{"ls"},
+				Usage:   "Show the configuration files list",
 				Action: func(*cli.Context) error {
 					API.PrintConfig()
 					return nil
