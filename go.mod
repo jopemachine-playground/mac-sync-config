@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/fatih/color v1.13.0
-	github.com/imroc/req/v3 v3.14.4
+	github.com/imroc/req/v3 v3.26.0
 	github.com/keybase/go-keychain v0.0.0-20221007210036-1ce7470f08a7
 	github.com/magefile/mage v1.13.0
 	github.com/urfave/cli/v2 v2.11.1
