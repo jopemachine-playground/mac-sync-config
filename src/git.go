@@ -10,7 +10,13 @@ import (
 	Utils "github.com/jopemachine/mac-sync-config/src/utils"
 )
 
-func GitCloneConfigsRepository() string {
+type gitManipulatorType struct{}
+
+var (
+	Git gitManipulatorType
+)
+
+func (git gitManipulatorType) CloneConfigsRepository() string {
 	tempPath, err := os.MkdirTemp("", "mac-sync-config-temp-")
 	Utils.PanicIfErr(err)
 
@@ -30,7 +36,7 @@ func GitCloneConfigsRepository() string {
 	return tempPath
 }
 
-func GitGetRemoteConfigHashId() string {
+func (git gitManipulatorType) GetRemoteConfigHashId() string {
 	gitLsRemoteArgs := strings.Fields(fmt.Sprintf("git ls-remote https://github.com/%s/%s HEAD", PreferenceSingleton.GithubId, PreferenceSingleton.MacSyncConfigGitRepositoryName))
 	gitLsRemoteCmd := exec.Command(gitLsRemoteArgs[0], gitLsRemoteArgs[1:]...)
 	stdout, err := gitLsRemoteCmd.CombinedOutput()
@@ -39,21 +45,21 @@ func GitGetRemoteConfigHashId() string {
 	return strings.TrimSpace(strings.Split(fmt.Sprintf("%s", stdout), "HEAD")[0])
 }
 
-func GitAddAll(cwd string) {
+func (git gitManipulatorType) AddAll(cwd string) {
 	gitAddAllCmd := exec.Command("git", "add", cwd)
 	gitAddAllCmd.Dir = cwd
 	output, err := gitAddAllCmd.CombinedOutput()
 	Utils.PanicIfErrWithMsg(string(output), err)
 }
 
-func GitAddFile(cwd string, filePath string) {
+func (git gitManipulatorType) AddFile(cwd string, filePath string) {
 	gitAddFileCmd := exec.Command("git", "add", filePath)
 	gitAddFileCmd.Dir = cwd
 	output, err := gitAddFileCmd.CombinedOutput()
 	Utils.PanicIfErrWithMsg(string(output), err)
 }
 
-func GitPatchFile(cwd string, filePath string) {
+func (git gitManipulatorType) PatchFile(cwd string, filePath string) {
 	gitPatchCmd := exec.Command("git", "add", "-p", filePath)
 	gitPatchCmd.Dir = cwd
 	gitPatchCmd.Stdin = os.Stdin
@@ -65,7 +71,7 @@ func GitPatchFile(cwd string, filePath string) {
 
 const GH_BOT_EMAIL = "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
 
-func GitCommit(cwd string) {
+func (git gitManipulatorType) Commit(cwd string) {
 	Logger.Info("Enter the commit message.")
 	gitCommitCmd := exec.Command("git", "commit", "--author", GH_BOT_EMAIL, "--allow-empty")
 	gitCommitCmd.Dir = cwd
@@ -81,7 +87,7 @@ func GitCommit(cwd string) {
 	Logger.ClearConsole()
 }
 
-func GitPush(cwd string) {
+func (git gitManipulatorType) Push(cwd string) {
 	gitPushArgs := strings.Fields("git push -u origin main --force")
 	gitPushCmd := exec.Command(gitPushArgs[0], gitPushArgs[1:]...)
 	gitPushCmd.Dir = cwd
@@ -92,7 +98,7 @@ func GitPush(cwd string) {
 	Logger.NewLine()
 }
 
-func GitShowDiff(cwd string, filePath string) {
+func (git gitManipulatorType) ShowDiff(cwd string, filePath string) {
 	gitShowDiffCmd := exec.Command("git", "diff", filePath)
 	gitShowDiffCmd.Dir = cwd
 	gitShowDiffCmd.Stdout = os.Stdout
@@ -104,7 +110,7 @@ func GitShowDiff(cwd string, filePath string) {
 	Logger.NewLine()
 }
 
-func GitReset(cwd string, filePath string) {
+func (git gitManipulatorType) Reset(cwd string, filePath string) {
 	gitResetCmd := exec.Command("git", "checkout", "--", filePath)
 	gitResetCmd.Dir = cwd
 	output, err := gitResetCmd.CombinedOutput()
@@ -112,7 +118,7 @@ func GitReset(cwd string, filePath string) {
 }
 
 // TODO: Below command does not handle binary file properly.
-func IsUpdated(cwd string, filePath string) bool {
+func (git gitManipulatorType) IsUpdated(cwd string, filePath string) bool {
 	gitStatusCmd := exec.Command("git", "status", "-s", filePath)
 	gitStatusCmd.Dir = cwd
 	output, err := gitStatusCmd.CombinedOutput()

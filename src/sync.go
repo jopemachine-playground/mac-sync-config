@@ -51,14 +51,14 @@ func ReadMacSyncConfigFile(filepath string) (ConfigInfo, error) {
 }
 
 func PullRemoteConfigs(argFilter string) {
-	remoteCommitHashId := GitGetRemoteConfigHashId()
+	remoteCommitHashId := Git.GetRemoteConfigHashId()
 	configFileLastChanged := ReadConfigFileLastChanged()
 
 	if configFileLastChanged["remote-commit-hash-id"] == remoteCommitHashId {
 		Logger.Info("Config files already up to date.")
 	}
 
-	tempPath := GitCloneConfigsRepository()
+	tempPath := Git.CloneConfigsRepository()
 	configs, err := ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MacSyncConfigsFile))
 
 	Utils.PanicIfErr(err)
@@ -99,12 +99,12 @@ func PullRemoteConfigs(argFilter string) {
 				progressStr := fmt.Sprintf("[%d/%d]", configPathIdx+1, len(configPathsToSync))
 				Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(srcFilePath))))
 
-				GitShowDiff(tempPath, srcFilePath)
+				Git.ShowDiff(tempPath, srcFilePath)
 				Logger.Question(color.CyanString(fmt.Sprintf("Press 'y' to update '%s', 'n' to ignore.", path.Base(dstPath))))
 				Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", dstPath)))
 
 				if yes := Utils.EnterYesNoQuestion(); yes {
-					GitReset(tempPath, srcFilePath)
+					Git.Reset(tempPath, srcFilePath)
 					err = os.RemoveAll(dstPath)
 					Utils.PanicIfErr(err)
 					CopyConfigs(srcFilePath, dstPath)
@@ -136,7 +136,7 @@ func PullRemoteConfigs(argFilter string) {
 }
 
 func PushConfigFiles() {
-	tempPath := GitCloneConfigsRepository()
+	tempPath := Git.CloneConfigsRepository()
 	configs, err := ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MacSyncConfigsFile))
 	Utils.PanicIfErr(err)
 
@@ -165,19 +165,19 @@ func PushConfigFiles() {
 		CopyConfigs(absSrcConfigPathToSync, dstFilePath)
 		Utils.PanicIfErr(err)
 
-		if haveDiff := IsUpdated(tempPath, dstFilePath); haveDiff {
+		if haveDiff := Git.IsUpdated(tempPath, dstFilePath); haveDiff {
 			updatedFilePaths = append(updatedFilePaths, Path{configPathToSync, dstFilePath})
 		}
 	}
 
 	if Flag_OverWrite {
-		GitAddAll(tempPath)
+		Git.AddAll(tempPath)
 		selectedUpdatedFilePaths = updatedFilePaths
 	} else {
 		for fileIdx, updatedFilePath := range updatedFilePaths {
 			progressStr := fmt.Sprintf("[%d/%d]", fileIdx+1, len(updatedFilePaths))
 			Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(updatedFilePath.convertedPath))))
-			GitShowDiff(tempPath, updatedFilePath.convertedPath)
+			Git.ShowDiff(tempPath, updatedFilePath.convertedPath)
 
 			Logger.Question(color.CyanString("Press 'y' for adding the file, 'n' to ignore, 'p' for patching."))
 			userRes := Utils.ConfigAddQuestion()
@@ -187,9 +187,9 @@ func PushConfigFiles() {
 			}
 
 			if userRes == Utils.PATCH {
-				GitPatchFile(tempPath, updatedFilePath.convertedPath)
+				Git.PatchFile(tempPath, updatedFilePath.convertedPath)
 			} else if userRes == Utils.ADD {
-				GitAddFile(tempPath, updatedFilePath.convertedPath)
+				Git.AddFile(tempPath, updatedFilePath.convertedPath)
 			}
 
 			Logger.ClearConsole()
@@ -205,8 +205,8 @@ func PushConfigFiles() {
 	Logger.NewLine()
 
 	if len(selectedUpdatedFilePaths) > 0 {
-		GitCommit(tempPath)
-		GitPush(tempPath)
+		Git.Commit(tempPath)
+		Git.Push(tempPath)
 
 		Logger.Info("Config files pushed successfully.")
 	} else {

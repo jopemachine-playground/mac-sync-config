@@ -36,7 +36,11 @@ var (
 )
 
 func GetRemoteConfigFolderName() string {
-	// #TODO: Add env variable here
+	folderName := os.Getenv("Mac-sync-config-folder")
+	if folderName != "" {
+		return folderName
+	}
+
 	return ".mac-sync-configs"
 }
 
