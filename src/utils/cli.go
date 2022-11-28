@@ -7,36 +7,46 @@ import (
 	"github.com/eiannone/keyboard"
 )
 
-func ScanValue() string {
-	char, key, err := keyboard.GetSingleKey()
-	PanicIfErr(err)
-	response := string(char)
-	if key == keyboard.KeyEsc || strings.ToLower(response) == "q" || key == keyboard.KeyCtrlC {
-		os.Exit(0)
-	}
+func ScanChar() string {
+	allowedKeys := []string{"y", "n", "p", "q"}
+	for {
+		char, key, err := keyboard.GetSingleKey()
+		PanicIfErr(err)
 
-	return response
+		response := strings.ToLower(string(char))
+		if key == keyboard.KeyEsc || key == keyboard.KeyCtrlC || response == "q" {
+			os.Exit(0)
+		}
+
+		if key == keyboard.KeyEnter {
+			response = "y"
+		}
+
+		if StringContains(allowedKeys, response) {
+			return response
+		}
+	}
 }
 
 func EnterYesNoQuestion() bool {
-	response := ScanValue()
+	response := ScanChar()
 	return strings.ToLower(response) == "y"
 }
 
 func WaitResponse() {
-	ScanValue()
+	ScanChar()
 }
 
 type ConfigAddQuestionResult string
 
 const (
-	PATCH = ConfigAddQuestionResult("PATCH")
-	ADD = ConfigAddQuestionResult("ADD")
+	PATCH  = ConfigAddQuestionResult("PATCH")
+	ADD    = ConfigAddQuestionResult("ADD")
 	IGNORE = ConfigAddQuestionResult("IGNORE")
 )
 
 func ConfigAddQuestion() ConfigAddQuestionResult {
-	response := ScanValue()
+	response := ScanChar()
 
 	if strings.ToLower(response) == "y" {
 		return ADD
