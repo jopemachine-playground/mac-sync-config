@@ -27,14 +27,14 @@ type PullPath struct {
 	dstPath      string
 }
 
-func CopyFiles(targetFilePath string, dstFilePath string) {
-	dirPath := filepath.Dir(dstFilePath)
+func CopyFiles(srcPath string, dstPath string) {
+	dirPath := filepath.Dir(dstPath)
 
 	mkdirCmd := exec.Command("mkdir", "-p", dirPath)
 	output, err := mkdirCmd.CombinedOutput()
 	Utils.PanicIfErrWithMsg(string(output), err)
 
-	cpCmd := exec.Command("cp", "-fR", targetFilePath, dstFilePath)
+	cpCmd := exec.Command("cp", "-fR", srcPath, dstPath)
 	output, err = cpCmd.CombinedOutput()
 	Utils.PanicIfErrWithMsg(string(output), err)
 }
@@ -68,11 +68,11 @@ func PushConfigFiles() {
 		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
 		absSrcConfigPathToSync := RelativePathToAbs(configPathToSync)
 
-		dstFilePath := fmt.Sprintf("%s%s", configRootPath, ReplaceUserName(RelativePathToAbs(configPathToSync)))
+		dstPath := fmt.Sprintf("%s%s", configRootPath, ReplaceUserName(RelativePathToAbs(configPathToSync)))
 
 		// Delete files for update if the files already exist
-		if _, err := os.Stat(dstFilePath); !errors.Is(err, os.ErrNotExist) {
-			err := os.RemoveAll(dstFilePath)
+		if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
+			err := os.RemoveAll(dstPath)
 			Utils.PanicIfErr(err)
 		}
 
@@ -83,11 +83,11 @@ func PushConfigFiles() {
 			continue
 		}
 
-		CopyFiles(absSrcConfigPathToSync, dstFilePath)
+		CopyFiles(absSrcConfigPathToSync, dstPath)
 		Utils.PanicIfErr(err)
 
-		if haveDiff := Git.IsUpdated(tempPath, dstFilePath); haveDiff {
-			updatedFilePaths = append(updatedFilePaths, PushPath{configPathToSync, dstFilePath})
+		if haveDiff := Git.IsUpdated(tempPath, dstPath); haveDiff {
+			updatedFilePaths = append(updatedFilePaths, PushPath{configPathToSync, dstPath})
 		}
 	}
 
@@ -137,7 +137,7 @@ func PushConfigFiles() {
 	os.RemoveAll(tempPath)
 }
 
-func PullRemoteConfigs(argFilter string) {
+func PullRemoteConfigs(nameFilter string) {
 	remoteCommitHashId := Git.GetRemoteConfigHashId()
 	lastChangedConfig := ReadLastChanged()
 
@@ -155,7 +155,7 @@ func PullRemoteConfigs(argFilter string) {
 	filteredConfigPathsToSync := []string{}
 
 	for _, configPathToSync := range configPathsToSync {
-		if argFilter != "" && !strings.Contains(filepath.Base(configPathToSync), argFilter) {
+		if nameFilter != "" && !strings.Contains(filepath.Base(configPathToSync), nameFilter) {
 			continue
 		}
 
@@ -166,9 +166,9 @@ func PullRemoteConfigs(argFilter string) {
 		configRootPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
 
 		absConfigPathToSync := ReplaceUserName(RelativePathToAbs(configPathToSync))
-		srcFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
+		srcPath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 
-		if _, err := os.Stat(srcFilePath); errors.Is(err, os.ErrNotExist) {
+		if _, err := os.Stat(srcPath); errors.Is(err, os.ErrNotExist) {
 			Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.\nEnsure to push the config file before pulling.", configPathToSync, MAC_SYNC_CONFIGS_FILE))
 			Utils.WaitResponse()
 			Logger.ClearConsole()
@@ -177,9 +177,11 @@ func PullRemoteConfigs(argFilter string) {
 
 		dstPath := RelativePathToAbs(configPathToSync)
 
-		// To show diff, copy dstPath file to srcFilePath.
-		// This should be reset before copying from dstFile to srcFilePath.
-		CopyFiles(dstPath, srcFilePath)
+		// To show diff, copy dstPath file to srcPath.
+		// This should be reset before copying from dstFile to srcPath.
+		if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
+			CopyFiles(dstPath, srcPath)
+		}
 
 		if Flag_OverWrite {
 			if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
@@ -189,21 +191,21 @@ func PullRemoteConfigs(argFilter string) {
 
 			selectedFilePaths = append(selectedFilePaths, PullPath{
 				configPathToSync,
-				srcFilePath,
+				srcPath,
 				dstPath,
 			})
 		} else {
 			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", configPathIdx+1, len(configPathsToSync)))
-			Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(srcFilePath))))
+			Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(srcPath))))
 
-			Git.ShowDiff(tempPath, srcFilePath)
+			Git.ShowDiff(tempPath, srcPath)
 			Logger.Question(color.New(color.FgCyan, color.Bold).Sprintf("Press 'y' to update '%s', 'n' to ignore.", path.Base(dstPath)))
 			Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", dstPath)))
 
 			if yes := Utils.EnterYesNoQuestion(); yes {
 				selectedFilePaths = append(selectedFilePaths, PullPath{
 					configPathToSync,
-					srcFilePath,
+					srcPath,
 					dstPath,
 				})
 			}
@@ -226,11 +228,12 @@ func PullRemoteConfigs(argFilter string) {
 		os.Mkdir(tempPath, os.ModePerm)
 	}
 
-	// If 'argFilter' is not empty, same commit hash id should not be ignored.
-	if argFilter == "" {
+	// If 'nameFilter' is not empty, same commit hash id should not be ignored.
+	if nameFilter == "" {
 		lastChangedConfig["remote-commit-hash-id"] = remoteCommitHashId
 		WriteLastChangedConfigFile(lastChangedConfig)
 	}
 
-	Logger.Info("Local config files are updated successfully.\nNote that Some changes might require to reboot to apply.")
+	Logger.NewLine()
+	Logger.Info("Local config files are updated successfully.\n  Note that Some changes might require to reboot to apply.")
 }
