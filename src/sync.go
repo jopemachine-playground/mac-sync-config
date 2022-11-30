@@ -101,15 +101,15 @@ func PushConfigFiles() {
 			Git.ShowDiff(tempPath, updatedFilePath.convertedPath)
 
 			Logger.Question(color.New(color.FgCyan, color.Bold).Sprint("Press 'y' for adding the file, 'n' to ignore, 'p' for patching."))
-			userRes := Utils.ConfigAddQuestion()
+			userRes := Utils.CreateQuestion(Utils.PUSH_CONFIG_ALLOWED_KEYS)
 
-			if userRes != Utils.IGNORE {
+			if userRes != Utils.QUESTION_RESULT_IGNORE {
 				selectedUpdatedFilePaths = append(selectedUpdatedFilePaths, updatedFilePath)
 			}
 
-			if userRes == Utils.PATCH {
+			if userRes == Utils.QUESTION_RESULT_PATCH {
 				Git.PatchFile(tempPath, updatedFilePath.convertedPath)
-			} else if userRes == Utils.ADD {
+			} else if userRes == Utils.QUESTION_RESULT_ADD {
 				Git.AddFile(tempPath, updatedFilePath.convertedPath)
 			}
 
@@ -143,6 +143,7 @@ func PullRemoteConfigs(nameFilter string) {
 
 	if lastChangedConfig["remote-commit-hash-id"] == remoteCommitHashId {
 		Logger.Info("Config files already up to date.")
+		return
 	}
 
 	tempPath := Git.CloneConfigsRepository()
@@ -198,8 +199,10 @@ func PullRemoteConfigs(nameFilter string) {
 			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", configPathIdx+1, len(configPathsToSync)))
 			Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(srcPath))))
 
-			Git.ShowDiff(tempPath, srcPath)
-			Logger.Question(color.New(color.FgCyan, color.Bold).Sprintf("Press 'y' to update '%s', 'n' to ignore.", path.Base(dstPath)))
+			// Git.ShowDiff(tempPath, srcPath)
+			Logger.Question(color.New(color.FgCyan, color.Bold).Sprintf(
+				"Press 'y' to update '%s', 'n' to ignore.", path.Base(dstPath)))
+
 			Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", dstPath)))
 
 			if yes := Utils.EnterYesNoQuestion(); yes {

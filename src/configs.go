@@ -26,7 +26,7 @@ var (
 )
 
 var (
-	PreferenceSingleton = GetPreference()
+	KeychainPreference = GetKeychainPreference()
 )
 
 var (
@@ -40,12 +40,6 @@ func GetRemoteConfigFolderName() string {
 	}
 
 	return ".mac-sync-configs"
-}
-
-type PackageManagerInfo struct {
-	InstallCommand   string   `yaml:"install"`
-	UninstallCommand string   `yaml:"uninstall"`
-	Programs         []string `yaml:"programs"`
 }
 
 type ConfigInfo struct {
@@ -79,7 +73,7 @@ func scanPreference(config *Preference) {
 	config.MacSyncConfigGitRepositoryName = repoName.Text()
 }
 
-func GetPreference() Preference {
+func GetKeychainPreference() Preference {
 	var config Preference
 
 	dat, err := keychain.GetGenericPassword("Mac-sync-config", "jopemachine", "Mac-sync-config", "org.jopemachine")

@@ -8,7 +8,8 @@ import (
 )
 
 func ScanChar() string {
-	allowedKeys := []string{"y", "n", "p", "q"}
+	// TODO: Refactoring below code.
+	allowedKeys := []string{"y", "n", "p", "q", "d", "e"}
 	for {
 		char, key, err := keyboard.GetSingleKey()
 		PanicIfErr(err)
@@ -37,22 +38,35 @@ func WaitResponse() {
 	ScanChar()
 }
 
-type ConfigAddQuestionResult string
+type QuestionResult string
 
 const (
-	PATCH  = ConfigAddQuestionResult("PATCH")
-	ADD    = ConfigAddQuestionResult("ADD")
-	IGNORE = ConfigAddQuestionResult("IGNORE")
+	QUESTION_RESULT_PATCH     = QuestionResult("PATCH")
+	QUESTION_RESULT_ADD       = QuestionResult("ADD")
+	QUESTION_RESULT_IGNORE    = QuestionResult("IGNORE")
+	QUESTION_RESULT_SHOW_DIFF = QuestionResult("SHOW_DIFF")
+	QUESTION_RESULT_EDIT      = QuestionResult("EDIT")
 )
 
-func ConfigAddQuestion() ConfigAddQuestionResult {
+var PUSH_CONFIG_ALLOWED_KEYS = []string{"y", "p", "d", "e", "n"}
+var PULL_CONFIG_ALLOWED_KEYS = []string{"y", "d", "n"}
+
+func CreateQuestion(allowedKeys []string) QuestionResult {
 	response := ScanChar()
 
-	if strings.ToLower(response) == "y" {
-		return ADD
-	} else if strings.ToLower(response) == "p" {
-		return PATCH
+	if !StringContains(allowedKeys, response) {
+		return QUESTION_RESULT_IGNORE
 	}
 
-	return IGNORE
+	if strings.ToLower(response) == "y" {
+		return QUESTION_RESULT_ADD
+	} else if strings.ToLower(response) == "p" {
+		return QUESTION_RESULT_PATCH
+	} else if strings.ToLower(response) == "d" {
+		return QUESTION_RESULT_SHOW_DIFF
+	} else if strings.ToLower(response) == "e" {
+		return QUESTION_RESULT_EDIT
+	}
+
+	return QUESTION_RESULT_IGNORE
 }

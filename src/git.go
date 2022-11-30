@@ -21,7 +21,7 @@ func (git gitManipulatorType) CloneConfigsRepository() string {
 	Utils.PanicIfErr(err)
 
 	// Should fully clone repository for commit and push
-	gitCloneArgs := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/%s %s", PreferenceSingleton.GithubId, PreferenceSingleton.MacSyncConfigGitRepositoryName, tempPath))
+	gitCloneArgs := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/%s %s", KeychainPreference.GithubId, KeychainPreference.MacSyncConfigGitRepositoryName, tempPath))
 	gitCloneCmd := exec.Command(gitCloneArgs[0], gitCloneArgs[1:]...)
 	output, err := gitCloneCmd.CombinedOutput()
 	Utils.PanicIfErrWithMsg(string(output), err)
@@ -37,7 +37,7 @@ func (git gitManipulatorType) CloneConfigsRepository() string {
 }
 
 func (git gitManipulatorType) GetRemoteConfigHashId() string {
-	gitLsRemoteArgs := strings.Fields(fmt.Sprintf("git ls-remote https://github.com/%s/%s HEAD", PreferenceSingleton.GithubId, PreferenceSingleton.MacSyncConfigGitRepositoryName))
+	gitLsRemoteArgs := strings.Fields(fmt.Sprintf("git ls-remote https://github.com/%s/%s HEAD", KeychainPreference.GithubId, KeychainPreference.MacSyncConfigGitRepositoryName))
 	gitLsRemoteCmd := exec.Command(gitLsRemoteArgs[0], gitLsRemoteArgs[1:]...)
 	stdout, err := gitLsRemoteCmd.CombinedOutput()
 	Utils.PanicIfErr(err)

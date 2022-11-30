@@ -11,10 +11,10 @@ func GetMacSyncConfigs() string {
 	// TODO: Add branch name as env variable
 	// TODO: Add file name as env variable
 	resp, err := req.C().R().
-		SetHeader("Authorization", fmt.Sprintf("token %s", PreferenceSingleton.GithubToken)).
+		SetHeader("Authorization", fmt.Sprintf("token %s", KeychainPreference.GithubToken)).
 		SetHeader("Cache-control", "no-cache").
-		SetPathParam("userName", PreferenceSingleton.GithubId).
-		SetPathParam("repoName", PreferenceSingleton.MacSyncConfigGitRepositoryName).
+		SetPathParam("userName", KeychainPreference.GithubId).
+		SetPathParam("repoName", KeychainPreference.MacSyncConfigGitRepositoryName).
 		SetPathParam("branchName", "main").
 		SetPathParam("fileName", "mac-sync-configs.yaml").
 		EnableDump().
