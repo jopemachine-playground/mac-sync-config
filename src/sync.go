@@ -97,20 +97,30 @@ func PushConfigFiles() {
 	} else {
 		for fileIdx, updatedFilePath := range updatedFilePaths {
 			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", fileIdx+1, len(updatedFilePaths)))
-			Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(updatedFilePath.convertedPath))))
-			Git.ShowDiff(tempPath, updatedFilePath.convertedPath)
+			Logger.Info(fmt.Sprintf("%s %s\n", progressStr, color.MagentaString(path.Base(updatedFilePath.convertedPath))))
+			Logger.Log(color.New(color.FgCyan, color.Bold).Sprint(PUSH_HELP))
 
-			Logger.Question(color.New(color.FgCyan, color.Bold).Sprint("Press 'y' for adding the file, 'n' to ignore, 'p' for patching."))
-			userRes := Utils.CreateQuestion(Utils.PUSH_CONFIG_ALLOWED_KEYS)
+			userResp := Utils.MakeQuestion(Utils.PUSH_CONFIG_ALLOWED_KEYS)
+			shouldAdd := true
+			partiallyPatched := false
 
-			if userRes != Utils.QUESTION_RESULT_IGNORE {
-				selectedUpdatedFilePaths = append(selectedUpdatedFilePaths, updatedFilePath)
+			if userResp == Utils.QUESTION_RESULT_SHOW_DIFF {
+				Git.ShowDiff(tempPath, updatedFilePath.convertedPath)
+				shouldAdd = Utils.MakeYesNoQuestion()
+			} else if userResp == Utils.QUESTION_RESULT_EDIT {
+				Git.EditFile(tempPath)
+			} else if userResp == Utils.QUESTION_RESULT_PATCH {
+				Git.PatchFile(tempPath, updatedFilePath.convertedPath)
+				partiallyPatched = true
+			} else if userResp == Utils.QUESTION_RESULT_IGNORE {
+				shouldAdd = false
 			}
 
-			if userRes == Utils.QUESTION_RESULT_PATCH {
-				Git.PatchFile(tempPath, updatedFilePath.convertedPath)
-			} else if userRes == Utils.QUESTION_RESULT_ADD {
-				Git.AddFile(tempPath, updatedFilePath.convertedPath)
+			if shouldAdd {
+				if !partiallyPatched {
+					Git.AddFile(tempPath, updatedFilePath.convertedPath)
+				}
+				selectedUpdatedFilePaths = append(selectedUpdatedFilePaths, updatedFilePath)
 			}
 
 			Logger.ClearConsole()
@@ -197,15 +207,24 @@ func PullRemoteConfigs(nameFilter string) {
 			})
 		} else {
 			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", configPathIdx+1, len(configPathsToSync)))
-			Logger.Info(fmt.Sprintf("%s Diff of %s\n", progressStr, color.MagentaString(path.Base(srcPath))))
+			Logger.Info(fmt.Sprintf("%s %s\n", progressStr, color.MagentaString(path.Base(srcPath))))
 
-			// Git.ShowDiff(tempPath, srcPath)
-			Logger.Question(color.New(color.FgCyan, color.Bold).Sprintf(
-				"Press 'y' to update '%s', 'n' to ignore.", path.Base(dstPath)))
-
+			Logger.Log(color.New(color.FgCyan, color.Bold).Sprintf(PULL_HELP))
 			Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", dstPath)))
 
-			if yes := Utils.EnterYesNoQuestion(); yes {
+			shouldAdd := true
+			userResp := Utils.MakeQuestion(Utils.PULL_CONFIG_ALLOWED_KEYS)
+
+			if userResp == Utils.QUESTION_RESULT_EDIT {
+				Git.EditFile(srcPath)
+			} else if userResp == Utils.QUESTION_RESULT_SHOW_DIFF {
+				Git.ShowDiff(tempPath, srcPath)
+				shouldAdd = Utils.MakeYesNoQuestion()
+			} else {
+				shouldAdd = false
+			}
+
+			if shouldAdd {
 				selectedFilePaths = append(selectedFilePaths, PullPath{
 					configPathToSync,
 					srcPath,

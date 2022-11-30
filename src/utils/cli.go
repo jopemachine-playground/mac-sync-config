@@ -29,11 +29,6 @@ func ScanChar() string {
 	}
 }
 
-func EnterYesNoQuestion() bool {
-	response := ScanChar()
-	return strings.ToLower(response) == "y"
-}
-
 func WaitResponse() {
 	ScanChar()
 }
@@ -49,9 +44,14 @@ const (
 )
 
 var PUSH_CONFIG_ALLOWED_KEYS = []string{"y", "p", "d", "e", "n"}
-var PULL_CONFIG_ALLOWED_KEYS = []string{"y", "d", "n"}
+var PULL_CONFIG_ALLOWED_KEYS = []string{"y", "d", "n", "e"}
 
-func CreateQuestion(allowedKeys []string) QuestionResult {
+func MakeYesNoQuestion() bool {
+	response := ScanChar()
+	return strings.ToLower(response) == "y"
+}
+
+func MakeQuestion(allowedKeys []string) QuestionResult {
 	response := ScanChar()
 
 	if !StringContains(allowedKeys, response) {
