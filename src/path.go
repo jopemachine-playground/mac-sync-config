@@ -2,6 +2,7 @@ package src
 
 import (
 	"fmt"
+	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
@@ -9,11 +10,15 @@ import (
 	Utils "github.com/jopemachine/mac-sync-config/src/utils"
 )
 
-const USER_PROFILE_MAGIC_STR = "USER_PROFILE"
+var User_Profile = "DEFAULT_USER_PROFILE"
 
 func ReplaceUserName(path string) string {
+	if userProfileEnv := os.Getenv("MAC_SYNC_CONFIG_USER_PROFILE"); userProfileEnv != "" {
+		User_Profile = userProfileEnv
+	}
+
 	if strings.HasPrefix(path, "/Users/") {
-		return strings.Replace(path, fmt.Sprintf("/Users/%s", Utils.GetCurrentUserName()), fmt.Sprintf("/Users/%s", USER_PROFILE_MAGIC_STR), 1)
+		return strings.Replace(path, fmt.Sprintf("/Users/%s", Utils.GetCurrentUserName()), fmt.Sprintf("/Users/%s", User_Profile), 1)
 	}
 
 	return path

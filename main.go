@@ -58,7 +58,16 @@ func main() {
 				Aliases: []string{"ls"},
 				Usage:   "Show the configuration files list",
 				Action: func(*cli.Context) error {
-					API.PrintConfig()
+					API.PrintMacSyncConfigs()
+					return nil
+				},
+			},
+			{
+				Name:    "switch-profile",
+				Aliases: []string{"profile"},
+				Usage:   "Switch the profile.  This could be useful when you need to the configuration set",
+				Action: func(c *cli.Context) error {
+					API.SwitchProfile(c.Args().First())
 					return nil
 				},
 			},

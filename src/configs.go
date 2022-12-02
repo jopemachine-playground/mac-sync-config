@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -14,7 +13,8 @@ import (
 )
 
 const (
-	CACHE_PATH = "~/Library/Caches/Mac-sync-config"
+	PREFERENCE_PATH = "~/Library/Preferences/Mac-sync-config"
+	CACHE_PATH      = "~/Library/Caches/Mac-sync-config"
 )
 
 const (
@@ -23,6 +23,7 @@ const (
 
 var (
 	ConfigFileLastChangedCachePath = strings.Join([]string{CACHE_PATH, "last-changed.json"}, "/")
+	LocalPreferencePath            = strings.Join([]string{PREFERENCE_PATH, "local-preference.json"}, "/")
 )
 
 var (
@@ -42,17 +43,17 @@ func GetRemoteConfigFolderName() string {
 	return ".mac-sync-configs"
 }
 
-type ConfigInfo struct {
+type MacSyncConfigs struct {
 	ConfigPathsToSync []string `yaml:"sync"`
 }
 
-type Preference struct {
+type KeychainPreferenceType struct {
 	GithubId                       string `json:"github_id"`
 	GithubToken                    string `json:"github_token"`
 	MacSyncConfigGitRepositoryName string `json:"mac_sync_config_git_repository_name"`
 }
 
-func scanPreference(config *Preference) {
+func scanKeyChainPreference(config *KeychainPreferenceType) {
 	Logger.Info("Please enter some information for accessing your Github repository.")
 	Logger.Info("This information will be stored in your keychain.")
 	Logger.NewLine()
@@ -73,15 +74,15 @@ func scanPreference(config *Preference) {
 	config.MacSyncConfigGitRepositoryName = repoName.Text()
 }
 
-func GetKeychainPreference() Preference {
-	var config Preference
+func GetKeychainPreference() KeychainPreferenceType {
+	var config KeychainPreferenceType
 
 	dat, err := keychain.GetGenericPassword("Mac-sync-config", "jopemachine", "Mac-sync-config", "org.jopemachine")
 
 	// TODO: Improve below error handling logic.
 	// If not exist, create new preference config file
 	if len(dat) == 0 {
-		scanPreference(&config)
+		scanKeyChainPreference(&config)
 		bytesToWrite, err := json.Marshal(config)
 		Utils.PanicIfErr(err)
 
@@ -116,22 +117,26 @@ func GetKeychainPreference() Preference {
 	return config
 }
 
-func ReadLastChanged() map[string]string {
-	configFileLastChangedCachePath := RelativePathToAbs(ConfigFileLastChangedCachePath)
+func ReadLocalPreference() map[string]string {
+	return ReadJSON(LocalPreferencePath)
+}
 
-	if _, err := os.Stat(configFileLastChangedCachePath); errors.Is(err, os.ErrNotExist) {
-		return make(map[string]string)
+func ReadLastChanged() map[string]string {
+	return ReadJSON(ConfigFileLastChangedCachePath)
+}
+
+func WriteLocalPreference(localPreference map[string]string) {
+	cacheDir := RelativePathToAbs(PREFERENCE_PATH)
+	localPreferencePath := RelativePathToAbs(LocalPreferencePath)
+
+	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(cacheDir, os.ModePerm)
+		Utils.PanicIfErr(err)
+	} else if _, err := os.Stat(localPreferencePath); !errors.Is(err, os.ErrNotExist) {
+		os.Remove(localPreferencePath)
 	}
 
-	dat, err := ioutil.ReadFile(configFileLastChangedCachePath)
-	Utils.PanicIfErr(err)
-
-	var lastChangedMap map[string]string
-
-	err = json.Unmarshal(dat, &lastChangedMap)
-	Utils.PanicIfErr(err)
-
-	return lastChangedMap
+	WriteJSON(localPreferencePath, localPreference)
 }
 
 func WriteLastChangedConfigFile(lastChangedConfig map[string]string) {
@@ -145,11 +150,7 @@ func WriteLastChangedConfigFile(lastChangedConfig map[string]string) {
 		os.Remove(configFileLastChangedCachePath)
 	}
 
-	bytesToWrite, err := json.Marshal(lastChangedConfig)
-	Utils.PanicIfErr(err)
-
-	err = ioutil.WriteFile(configFileLastChangedCachePath, bytesToWrite, os.ModePerm)
-	Utils.PanicIfErr(err)
+	WriteJSON(configFileLastChangedCachePath, lastChangedConfig)
 }
 
 func ClearCache() {
@@ -162,6 +163,14 @@ func ClearCache() {
 	Logger.Success("Cache file cleared.")
 }
 
-func PrintConfig() {
+func PrintMacSyncConfigs() {
 	Logger.Log(GetMacSyncConfigs())
+}
+
+func SwitchProfile(profileName string) {
+	localPreference := ReadLocalPreference()
+	localPreferencePath := RelativePathToAbs(LocalPreferencePath)
+
+	localPreference["profile"] = profileName
+	WriteJSON(localPreferencePath, localPreference)
 }

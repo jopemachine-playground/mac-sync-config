@@ -39,16 +39,15 @@ func CopyFiles(srcPath string, dstPath string) {
 	Utils.PanicIfErrWithMsg(string(output), err)
 }
 
-func ReadMacSyncConfigFile(filepath string) (ConfigInfo, error) {
+func ReadMacSyncConfigFile(filepath string) (MacSyncConfigs, error) {
 	if _, err := os.Stat(filepath); errors.Is(err, os.ErrNotExist) {
-		return ConfigInfo{}, err
+		return MacSyncConfigs{}, err
 	}
 
 	dat, err := ioutil.ReadFile(filepath)
-
 	Utils.PanicIfErr(err)
 
-	var config ConfigInfo
+	var config MacSyncConfigs
 
 	err = yaml.Unmarshal(dat, &config)
 	Utils.PanicIfErr(err)
