@@ -16,8 +16,13 @@ type PushPathInfo struct {
 	convertedPath string
 }
 
-func PushConfigFiles() {
+func PushConfigFiles(profileName string) {
+	if profileName != "" {
+		os.Setenv("MAC_SYNC_CONFIG_USER_PROFILE", profileName)
+	}
+
 	MacSyncConfig.Logger.ClearConsole()
+
 	tempPath := MacSyncConfig.Github.CloneConfigsRepository()
 	configs, err := MacSyncConfig.ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
 	Utils.PanicIfErr(err)

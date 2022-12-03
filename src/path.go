@@ -13,6 +13,11 @@ import (
 var User_Profile = "DEFAULT_USER_PROFILE"
 
 func ReplaceUserName(path string) string {
+	if userProfile := ReadLocalPreference()["profile"]; userProfile != "" {
+		User_Profile = userProfile
+	}
+
+	// Overwrite the profile if env variable set
 	if userProfileEnv := os.Getenv("MAC_SYNC_CONFIG_USER_PROFILE"); userProfileEnv != "" {
 		User_Profile = userProfileEnv
 	}

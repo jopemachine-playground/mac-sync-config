@@ -26,8 +26,8 @@ func main() {
 			{
 				Name:  "push",
 				Usage: "Push the local config files to the remote repository",
-				Action: func(*cli.Context) error {
-					Commands.PushConfigFiles()
+				Action: func(cliContext *cli.Context) error {
+					Commands.PushConfigFiles(cliContext.Args().First())
 					return nil
 				},
 				Flags: []cli.Flag{
@@ -42,8 +42,8 @@ func main() {
 				Name:      "pull",
 				Usage:     "Pull the config files from the remote repository",
 				ArgsUsage: "Filter to basename of the config file",
-				Action: func(c *cli.Context) error {
-					Commands.PullRemoteConfigs(c.Args().First())
+				Action: func(cliContext *cli.Context) error {
+					Commands.PullRemoteConfigs(cliContext.Args().First())
 					return nil
 				},
 				Flags: []cli.Flag{
@@ -67,8 +67,8 @@ func main() {
 				Name:    "switch-profile",
 				Aliases: []string{"profile"},
 				Usage:   "Switch the profile. This could be useful when you need to the configuration set",
-				Action: func(c *cli.Context) error {
-					Commands.SwitchProfile(c.Args().First())
+				Action: func(cliContext *cli.Context) error {
+					Commands.SwitchProfile(cliContext.Args().First())
 					return nil
 				},
 			},

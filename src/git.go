@@ -39,8 +39,6 @@ func (git gitManipulator) PatchFile(cwd string, filePath string) {
 	Utils.PanicIfErr(err)
 }
 
-const GH_BOT_EMAIL = "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
-
 func (git gitManipulator) Commit(cwd string) {
 	Logger.Info("Enter the commit message.")
 	gitCommitCmd := exec.Command("git", "commit", "--author", GH_BOT_EMAIL, "--allow-empty")

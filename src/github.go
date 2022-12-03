@@ -17,6 +17,8 @@ var (
 	Github gitHubManipulator
 )
 
+const GH_BOT_EMAIL = "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+
 func (github gitHubManipulator) CloneConfigsRepository() string {
 	tempPath, err := os.MkdirTemp("", "mac-sync-config-temp-")
 	Utils.PanicIfErr(err)

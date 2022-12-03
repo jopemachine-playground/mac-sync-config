@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"path/filepath"
-	"strings"
 
 	"github.com/fatih/color"
 	MacSyncConfig "github.com/jopemachine/mac-sync-config/src"
@@ -19,8 +17,13 @@ type PullPathInfo struct {
 	dstPath      string
 }
 
-func PullRemoteConfigs(nameFilter string) {
+func PullRemoteConfigs(profileName string) {
+	if profileName != "" {
+		os.Setenv("MAC_SYNC_CONFIG_USER_PROFILE", profileName)
+	}
+
 	MacSyncConfig.Logger.ClearConsole()
+
 	remoteCommitHashId := MacSyncConfig.Github.GetRemoteConfigHashId()
 	lastChangedConfig := MacSyncConfig.ReadLastChanged()
 
@@ -39,10 +42,6 @@ func PullRemoteConfigs(nameFilter string) {
 	filteredConfigPathsToSync := []string{}
 
 	for _, configPathToSync := range configPathsToSync {
-		if nameFilter != "" && !strings.Contains(filepath.Base(configPathToSync), nameFilter) {
-			continue
-		}
-
 		configRootPath := fmt.Sprintf("%s/%s", tempPath, MacSyncConfig.GetRemoteConfigFolderName())
 		dstPath := fmt.Sprintf("%s%s", configRootPath, MacSyncConfig.ReplaceUserName(MacSyncConfig.RelativePathToAbs(configPathToSync)))
 
@@ -127,12 +126,6 @@ func PullRemoteConfigs(nameFilter string) {
 
 	if _, err := os.Stat(tempPath); errors.Is(err, os.ErrNotExist) {
 		os.Mkdir(tempPath, os.ModePerm)
-	}
-
-	// If 'nameFilter' is not empty, same commit hash id should not be ignored.
-	if nameFilter == "" {
-		lastChangedConfig["remote-commit-hash-id"] = remoteCommitHashId
-		MacSyncConfig.WriteLastChangedConfigFile(lastChangedConfig)
 	}
 
 	if len(selectedFilePaths) > 0 {

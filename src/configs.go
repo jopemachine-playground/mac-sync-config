@@ -113,11 +113,13 @@ func GetKeychainPreference() KeychainPreferenceType {
 		panic(err)
 	} else {
 		err = json.Unmarshal(dat, &config)
-		Utils.PanicIfErrWithMsg("Json data seems to be malformed or outdated.\nPress \"y\" to enter new information or press \"n\" to ignore it.", err)
-		yes := Utils.MakeYesNoQuestion()
-		if yes {
-			keychain.DeleteGenericPasswordItem("Mac-sync-config", "jopemachine")
-			Logger.Success("Keychain data deleted successfully.")
+		if err != nil {
+			Logger.Error("Json data seems to be malformed or outdated.\nPress \"y\" to enter new information or press \"n\" to ignore it.")
+			yes := Utils.MakeYesNoQuestion()
+			if yes {
+				keychain.DeleteGenericPasswordItem("Mac-sync-config", "jopemachine")
+				Logger.Success("Keychain data deleted successfully.")
+			}
 		}
 	}
 

@@ -7,15 +7,17 @@ import (
 )
 
 func isValidName(profileName string) bool {
-	// TODO: Add more validation logic below
-	if profileName == "" {
-		return false
-	}
+	// TODO: Add validation logic below
 	return true
 }
 
 func SwitchProfile(profileName string) {
 	localPreference := MacSyncConfig.ReadLocalPreference()
+	if profileName == "" {
+		MacSyncConfig.Logger.Info(fmt.Sprintf("Current profile is '%s'", localPreference["profile"]))
+		return
+	}
+
 	if isValidName(profileName) {
 		localPreference["profile"] = profileName
 		MacSyncConfig.WriteLocalPreference(localPreference)
