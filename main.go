@@ -67,15 +67,6 @@ func main() {
 					return nil
 				},
 			},
-			// TODO: Remove this command in release build.
-			{
-				Name:  "clear-cache",
-				Usage: "Clear cache used in \"pull\" command",
-				Action: func(*cli.Context) error {
-					API.ClearCache()
-					return nil
-				},
-			},
 		},
 	}
 

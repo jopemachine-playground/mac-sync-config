@@ -24,14 +24,6 @@ func PullRemoteConfigs(profileName string) {
 
 	MacSyncConfig.Logger.ClearConsole()
 
-	remoteCommitHashId := MacSyncConfig.Github.GetRemoteConfigHashId()
-	lastChangedConfig := MacSyncConfig.ReadLastChanged()
-
-	if lastChangedConfig["remote-commit-hash-id"] == remoteCommitHashId {
-		MacSyncConfig.Logger.Info("Config files already up to date.")
-		return
-	}
-
 	tempPath := MacSyncConfig.Github.CloneConfigsRepository()
 	configs, err := MacSyncConfig.ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
 

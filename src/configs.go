@@ -16,7 +16,6 @@ import (
 
 const (
 	PREFERENCE_DIR_PATH = "~/Library/Preferences/Mac-sync-config"
-	CACHE_DIR_PATH      = "~/Library/Caches/Mac-sync-config"
 )
 
 const (
@@ -24,8 +23,7 @@ const (
 )
 
 var (
-	ConfigFileLastChangedCachePath = strings.Join([]string{CACHE_DIR_PATH, "last-changed.json"}, "/")
-	LocalPreferencePath            = strings.Join([]string{PREFERENCE_DIR_PATH, "local-preference.json"}, "/")
+	LocalPreferencePath = strings.Join([]string{PREFERENCE_DIR_PATH, "local-preference.json"}, "/")
 )
 
 var (
@@ -130,10 +128,6 @@ func ReadLocalPreference() map[string]string {
 	return ReadJSON(LocalPreferencePath)
 }
 
-func ReadLastChanged() map[string]string {
-	return ReadJSON(ConfigFileLastChangedCachePath)
-}
-
 func WriteLocalPreference(localPreference map[string]string) {
 	localPreferenceDir := RelativePathToAbs(PREFERENCE_DIR_PATH)
 	localPreferencePath := RelativePathToAbs(LocalPreferencePath)
@@ -146,30 +140,6 @@ func WriteLocalPreference(localPreference map[string]string) {
 	}
 
 	WriteJSON(localPreferencePath, localPreference)
-}
-
-func WriteLastChangedConfigFile(lastChangedConfig map[string]string) {
-	cacheDir := RelativePathToAbs(CACHE_DIR_PATH)
-	configFileLastChangedCachePath := RelativePathToAbs(ConfigFileLastChangedCachePath)
-
-	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
-		err := os.MkdirAll(cacheDir, os.ModePerm)
-		Utils.PanicIfErr(err)
-	} else if _, err := os.Stat(configFileLastChangedCachePath); !errors.Is(err, os.ErrNotExist) {
-		os.Remove(configFileLastChangedCachePath)
-	}
-
-	WriteJSON(configFileLastChangedCachePath, lastChangedConfig)
-}
-
-func ClearCache() {
-	configFileLastChangedCachePath := RelativePathToAbs(ConfigFileLastChangedCachePath)
-
-	err := os.Remove(configFileLastChangedCachePath)
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		panic(err)
-	}
-	Logger.Success("Cache file cleared.")
 }
 
 func ReadMacSyncConfigFile(filepath string) (MacSyncConfigs, error) {
