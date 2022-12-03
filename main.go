@@ -24,8 +24,9 @@ func main() {
 		Suggest:   true,
 		Commands: []*cli.Command{
 			{
-				Name:  "push",
-				Usage: "Push the local config files to the remote repository",
+				Name:      "push",
+				Usage:     "Push the local config files to the remote repository",
+				ArgsUsage: "Specify profile name",
 				Action: func(cliContext *cli.Context) error {
 					Commands.PushConfigFiles(cliContext.Args().First())
 					return nil
@@ -41,7 +42,7 @@ func main() {
 			{
 				Name:      "pull",
 				Usage:     "Pull the config files from the remote repository",
-				ArgsUsage: "Filter to basename of the config file",
+				ArgsUsage: "Specify profile name",
 				Action: func(cliContext *cli.Context) error {
 					Commands.PullRemoteConfigs(cliContext.Args().First())
 					return nil
