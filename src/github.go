@@ -46,7 +46,7 @@ func (github gitHubManipulator) GetRemoteConfigHashId() string {
 	return strings.TrimSpace(strings.Split(fmt.Sprintf("%s", stdout), "HEAD")[0])
 }
 
-func GetMacSyncConfigs() string {
+func (github gitHubManipulator) GetMacSyncConfigs() string {
 	// TODO: Add branch name as env variable
 	// TODO: Add file name as env variable
 	resp, err := req.C().R().

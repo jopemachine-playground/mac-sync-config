@@ -5,5 +5,5 @@ import (
 )
 
 func PrintMacSyncConfigs() {
-	MacSyncConfig.Logger.Log(MacSyncConfig.GetMacSyncConfigs())
+	MacSyncConfig.Logger.Log(MacSyncConfig.Github.GetMacSyncConfigs())
 }

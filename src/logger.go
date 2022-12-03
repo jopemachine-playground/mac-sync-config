@@ -1,7 +1,6 @@
 package src
 
 import (
-	"bytes"
 	"fmt"
 
 	"github.com/fatih/color"
@@ -10,8 +9,7 @@ import (
 type loggerType struct{}
 
 var (
-	Logger  loggerType
-	logFile bytes.Buffer
+	Logger loggerType
 )
 
 func (logger loggerType) Log(msg string) {
