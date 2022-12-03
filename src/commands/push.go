@@ -11,7 +11,7 @@ import (
 	Utils "github.com/jopemachine/mac-sync-config/utils"
 )
 
-type PushPath struct {
+type PushPathInfo struct {
 	originalPath  string
 	convertedPath string
 }
@@ -22,8 +22,8 @@ func PushConfigFiles() {
 	configs, err := MacSyncConfig.ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempPath, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
 	Utils.PanicIfErr(err)
 
-	var updatedFilePaths = []PushPath{}
-	var selectedUpdatedFilePaths = []PushPath{}
+	var updatedFilePaths = []PushPathInfo{}
+	var selectedUpdatedFilePaths = []PushPathInfo{}
 
 	for _, configPathToSync := range configs.ConfigPathsToSync {
 		configRootPath := fmt.Sprintf("%s/%s", tempPath, MacSyncConfig.GetRemoteConfigFolderName())
@@ -49,7 +49,7 @@ func PushConfigFiles() {
 		Utils.PanicIfErr(err)
 
 		if haveDiff := MacSyncConfig.Git.IsUpdated(tempPath, dstPath); haveDiff {
-			updatedFilePaths = append(updatedFilePaths, PushPath{configPathToSync, dstPath})
+			updatedFilePaths = append(updatedFilePaths, PushPathInfo{configPathToSync, dstPath})
 		}
 	}
 
@@ -92,15 +92,17 @@ func PushConfigFiles() {
 
 	MacSyncConfig.Logger.NewLine()
 
-	for _, selectedFilePath := range selectedUpdatedFilePaths {
-		MacSyncConfig.Logger.Success(fmt.Sprintf("\"%s\" updated.", selectedFilePath.originalPath))
-	}
-
-	MacSyncConfig.Logger.NewLine()
-
 	if len(selectedUpdatedFilePaths) > 0 {
 		MacSyncConfig.Git.Commit(tempPath)
 		MacSyncConfig.Git.Push(tempPath)
+
+		MacSyncConfig.Logger.NewLine()
+
+		for _, selectedFilePath := range selectedUpdatedFilePaths {
+			MacSyncConfig.Logger.Success(fmt.Sprintf("\"%s\" updated.", selectedFilePath.originalPath))
+		}
+
+		MacSyncConfig.Logger.NewLine()
 
 		MacSyncConfig.Logger.Info("Config files pushed successfully.")
 	} else {

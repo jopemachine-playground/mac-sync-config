@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	PREFERENCE_PATH = "~/Library/Preferences/Mac-sync-config"
-	CACHE_PATH      = "~/Library/Caches/Mac-sync-config"
+	PREFERENCE_DIR_PATH = "~/Library/Preferences/Mac-sync-config"
+	CACHE_DIR_PATH      = "~/Library/Caches/Mac-sync-config"
 )
 
 const (
@@ -24,8 +24,8 @@ const (
 )
 
 var (
-	ConfigFileLastChangedCachePath = strings.Join([]string{CACHE_PATH, "last-changed.json"}, "/")
-	LocalPreferencePath            = strings.Join([]string{PREFERENCE_PATH, "local-preference.json"}, "/")
+	ConfigFileLastChangedCachePath = strings.Join([]string{CACHE_DIR_PATH, "last-changed.json"}, "/")
+	LocalPreferencePath            = strings.Join([]string{PREFERENCE_DIR_PATH, "local-preference.json"}, "/")
 )
 
 var (
@@ -113,7 +113,12 @@ func GetKeychainPreference() KeychainPreferenceType {
 		panic(err)
 	} else {
 		err = json.Unmarshal(dat, &config)
-		Utils.PanicIfErrWithMsg("Json data malformed. Please delete and remake the keychain", err)
+		Utils.PanicIfErrWithMsg("Json data seems to be malformed or outdated.\nPress \"y\" to enter new information or press \"n\" to ignore it.", err)
+		yes := Utils.MakeYesNoQuestion()
+		if yes {
+			keychain.DeleteGenericPasswordItem("Mac-sync-config", "jopemachine")
+			Logger.Success("Keychain data deleted successfully.")
+		}
 	}
 
 	return config
@@ -128,11 +133,11 @@ func ReadLastChanged() map[string]string {
 }
 
 func WriteLocalPreference(localPreference map[string]string) {
-	cacheDir := RelativePathToAbs(PREFERENCE_PATH)
+	localPreferenceDir := RelativePathToAbs(PREFERENCE_DIR_PATH)
 	localPreferencePath := RelativePathToAbs(LocalPreferencePath)
 
-	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(cacheDir, os.ModePerm)
+	if _, err := os.Stat(localPreferenceDir); errors.Is(err, os.ErrNotExist) {
+		err := os.MkdirAll(localPreferenceDir, os.ModePerm)
 		Utils.PanicIfErr(err)
 	} else if _, err := os.Stat(localPreferencePath); !errors.Is(err, os.ErrNotExist) {
 		os.Remove(localPreferencePath)
@@ -142,11 +147,11 @@ func WriteLocalPreference(localPreference map[string]string) {
 }
 
 func WriteLastChangedConfigFile(lastChangedConfig map[string]string) {
-	cacheDir := RelativePathToAbs(CACHE_PATH)
+	cacheDir := RelativePathToAbs(CACHE_DIR_PATH)
 	configFileLastChangedCachePath := RelativePathToAbs(ConfigFileLastChangedCachePath)
 
 	if _, err := os.Stat(cacheDir); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(cacheDir, os.ModePerm)
+		err := os.MkdirAll(cacheDir, os.ModePerm)
 		Utils.PanicIfErr(err)
 	} else if _, err := os.Stat(configFileLastChangedCachePath); !errors.Is(err, os.ErrNotExist) {
 		os.Remove(configFileLastChangedCachePath)

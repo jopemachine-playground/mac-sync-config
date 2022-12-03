@@ -13,7 +13,7 @@ import (
 	Utils "github.com/jopemachine/mac-sync-config/utils"
 )
 
-type PullPath struct {
+type PullPathInfo struct {
 	originalPath string
 	srcPath      string
 	dstPath      string
@@ -35,7 +35,7 @@ func PullRemoteConfigs(nameFilter string) {
 	Utils.PanicIfErr(err)
 
 	configPathsToSync := configs.ConfigPathsToSync
-	selectedFilePaths := []PullPath{}
+	selectedFilePaths := []PullPathInfo{}
 	filteredConfigPathsToSync := []string{}
 
 	for _, configPathToSync := range configPathsToSync {
@@ -79,7 +79,7 @@ func PullRemoteConfigs(nameFilter string) {
 				Utils.PanicIfErr(err)
 			}
 
-			selectedFilePaths = append(selectedFilePaths, PullPath{
+			selectedFilePaths = append(selectedFilePaths, PullPathInfo{
 				configPathToSync,
 				srcPath,
 				dstPath,
@@ -104,7 +104,7 @@ func PullRemoteConfigs(nameFilter string) {
 			}
 
 			if shouldAdd {
-				selectedFilePaths = append(selectedFilePaths, PullPath{
+				selectedFilePaths = append(selectedFilePaths, PullPathInfo{
 					configPathToSync,
 					srcPath,
 					dstPath,
