@@ -10,20 +10,21 @@ import (
 	Utils "github.com/jopemachine/mac-sync-config/utils"
 )
 
-var User_Profile = "DEFAULT_USER_PROFILE"
+func GetUserProfile() string {
+	if userProfileEnv := os.Getenv("MAC_SYNC_CONFIG_USER_PROFILE"); userProfileEnv != "" {
+		return userProfileEnv
+	}
+
+	if userProfile := ReadLocalPreference()["profile"]; userProfile != "" {
+		return userProfile
+	}
+
+	return "DEFAULT_USER_PROFILE"
+}
 
 func ReplaceUserName(path string) string {
-	if userProfile := ReadLocalPreference()["profile"]; userProfile != "" {
-		User_Profile = userProfile
-	}
-
-	// Overwrite the profile if env variable set
-	if userProfileEnv := os.Getenv("MAC_SYNC_CONFIG_USER_PROFILE"); userProfileEnv != "" {
-		User_Profile = userProfileEnv
-	}
-
 	if strings.HasPrefix(path, "/Users/") {
-		return strings.Replace(path, fmt.Sprintf("/Users/%s", Utils.GetMacosUserName()), fmt.Sprintf("/Users/%s", User_Profile), 1)
+		return strings.Replace(path, fmt.Sprintf("/Users/%s", Utils.GetMacosUserName()), fmt.Sprintf("/Users/%s", GetUserProfile()), 1)
 	}
 
 	return path
