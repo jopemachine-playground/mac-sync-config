@@ -20,6 +20,7 @@ type PullPath struct {
 }
 
 func PullRemoteConfigs(nameFilter string) {
+	MacSyncConfig.Logger.ClearConsole()
 	remoteCommitHashId := MacSyncConfig.Github.GetRemoteConfigHashId()
 	lastChangedConfig := MacSyncConfig.ReadLastChanged()
 
@@ -42,7 +43,12 @@ func PullRemoteConfigs(nameFilter string) {
 			continue
 		}
 
-		filteredConfigPathsToSync = append(filteredConfigPathsToSync, configPathToSync)
+		configRootPath := fmt.Sprintf("%s/%s", tempPath, MacSyncConfig.GetRemoteConfigFolderName())
+		dstPath := fmt.Sprintf("%s%s", configRootPath, MacSyncConfig.ReplaceUserName(MacSyncConfig.RelativePathToAbs(configPathToSync)))
+
+		if haveDiff := MacSyncConfig.Git.IsUpdated(tempPath, dstPath); haveDiff {
+			filteredConfigPathsToSync = append(filteredConfigPathsToSync, configPathToSync)
+		}
 	}
 
 	for configPathIdx, configPathToSync := range filteredConfigPathsToSync {
@@ -53,6 +59,7 @@ func PullRemoteConfigs(nameFilter string) {
 
 		if _, err := os.Stat(srcPath); errors.Is(err, os.ErrNotExist) {
 			MacSyncConfig.Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.\nEnsure to push the config file before pulling.", configPathToSync, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
+			MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP)
 			Utils.WaitResponse()
 			MacSyncConfig.Logger.ClearConsole()
 			continue
@@ -79,10 +86,9 @@ func PullRemoteConfigs(nameFilter string) {
 			})
 		} else {
 			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", configPathIdx+1, len(configPathsToSync)))
-			MacSyncConfig.Logger.Info(fmt.Sprintf("%s %s\n", progressStr, color.MagentaString(path.Base(srcPath))))
-
-			MacSyncConfig.Logger.Log(color.New(color.FgCyan, color.Bold).Sprintf(MacSyncConfig.PULL_HELP))
+			MacSyncConfig.Logger.Info(fmt.Sprintf("%s %s", progressStr, color.MagentaString(path.Base(srcPath))))
 			MacSyncConfig.Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", dstPath)))
+			MacSyncConfig.Logger.Log(color.New(color.FgCyan, color.Bold).Sprintf(MacSyncConfig.PULL_HELP))
 
 			shouldAdd := true
 			userResp := Utils.MakeQuestion(Utils.PULL_CONFIG_ALLOWED_KEYS)
@@ -91,6 +97,7 @@ func PullRemoteConfigs(nameFilter string) {
 				MacSyncConfig.EditFile(srcPath)
 			} else if userResp == Utils.QUESTION_RESULT_SHOW_DIFF {
 				MacSyncConfig.Git.ShowDiff(tempPath, srcPath)
+				MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP)
 				shouldAdd = Utils.MakeYesNoQuestion()
 			} else {
 				shouldAdd = false
@@ -128,6 +135,9 @@ func PullRemoteConfigs(nameFilter string) {
 		MacSyncConfig.WriteLastChangedConfigFile(lastChangedConfig)
 	}
 
-	MacSyncConfig.Logger.NewLine()
-	MacSyncConfig.Logger.Info("Local config files are updated successfully.\n  Note that Some changes might require to reboot to apply.")
+	if len(selectedFilePaths) > 0 {
+		MacSyncConfig.Logger.Info("Local config files are updated successfully.\n  Note that Some changes might require to reboot to apply.")
+	} else {
+		MacSyncConfig.Logger.Info("Config files already up to date.")
+	}
 }

@@ -9,7 +9,7 @@ func IsRootUser() bool {
 	return os.Geteuid() == 0
 }
 
-func GetCurrentUserName() string {
+func GetMacosUserName() string {
 	user, err := user.Current()
 	PanicIfErr(err)
 	return user.Username

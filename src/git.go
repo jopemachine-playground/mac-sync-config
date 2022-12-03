@@ -15,7 +15,7 @@ var (
 	Git gitManipulator
 )
 
-func (git gitManipulator) AddAll(cwd string) {
+func (git gitManipulator) AddAllFiles(cwd string) {
 	gitAddAllCmd := exec.Command("git", "add", cwd)
 	gitAddAllCmd.Dir = cwd
 	output, err := gitAddAllCmd.CombinedOutput()
@@ -48,12 +48,17 @@ func (git gitManipulator) Commit(cwd string) {
 	gitCommitCmd.Env = append(gitCommitCmd.Env, "GIT_COMMITTER_NAME=\"Mac-sync-config\"")
 	gitCommitCmd.Env = append(gitCommitCmd.Env, "EDITOR=vim")
 	gitCommitCmd.Env = append(gitCommitCmd.Env, fmt.Sprintf("TERM=%s", os.Getenv("TERM")))
-	// TODO: Fix whitespace not working in the vim issue
+	// TODO: Fix backspace key not working in the vim issue
 	gitCommitCmd.Stdin = os.Stdin
 	gitCommitCmd.Stdout = os.Stdout
 	gitCommitCmd.Stderr = os.Stderr
 	err := gitCommitCmd.Run()
-	Utils.PanicIfErr(err)
+
+	if err != nil {
+		Logger.Error("Git commit aborted.")
+		os.Exit(1)
+	}
+
 	Logger.ClearConsole()
 }
 
@@ -69,15 +74,27 @@ func (git gitManipulator) Push(cwd string) {
 }
 
 func (git gitManipulator) ShowDiff(cwd string, filePath string) {
-	gitShowDiffCmd := exec.Command("git", "diff", filePath)
-	gitShowDiffCmd.Dir = cwd
-	gitShowDiffCmd.Stdout = os.Stdout
-	gitShowDiffCmd.Stderr = os.Stderr
-	gitShowDiffCmd.Run()
-	// pipe might be broken.
-	// Utils.PanicIfErr(err)
+	// TODO: It would be good to check only once.
+	checkDiffCmd := exec.Command("git", "diff", "--quiet", filePath)
+	checkDiffCmd.Dir = cwd
+	checkDiffCmd.Stdout = os.Stdout
+	checkDiffCmd.Stderr = os.Stderr
+	err := checkDiffCmd.Run()
 
-	Logger.NewLine()
+	if err == nil {
+		Logger.Info("No diff")
+	} else {
+		gitShowDiffCmd := exec.Command("git", "diff", filePath)
+		gitShowDiffCmd.Dir = cwd
+		gitShowDiffCmd.Stdout = os.Stdout
+		gitShowDiffCmd.Stderr = os.Stderr
+		gitShowDiffCmd.Run()
+
+		// pipe might be broken, but maybe doesn't matter here.
+		// Utils.PanicIfErr(err)
+
+		Logger.NewLine()
+	}
 }
 
 func (git gitManipulator) Reset(cwd string, filePath string) {

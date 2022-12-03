@@ -18,13 +18,12 @@ func ReplaceUserName(path string) string {
 	}
 
 	if strings.HasPrefix(path, "/Users/") {
-		return strings.Replace(path, fmt.Sprintf("/Users/%s", Utils.GetCurrentUserName()), fmt.Sprintf("/Users/%s", User_Profile), 1)
+		return strings.Replace(path, fmt.Sprintf("/Users/%s", Utils.GetMacosUserName()), fmt.Sprintf("/Users/%s", User_Profile), 1)
 	}
 
 	return path
 }
 
-// when pathHandlingType is true, it returns str replaced userName with magic string
 func RelativePathToAbs(path string) string {
 	usr, _ := user.Current()
 	dir := usr.HomeDir

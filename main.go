@@ -66,12 +66,13 @@ func main() {
 			{
 				Name:    "switch-profile",
 				Aliases: []string{"profile"},
-				Usage:   "Switch the profile.  This could be useful when you need to the configuration set",
+				Usage:   "Switch the profile. This could be useful when you need to the configuration set",
 				Action: func(c *cli.Context) error {
 					Commands.SwitchProfile(c.Args().First())
 					return nil
 				},
 			},
+			// TODO: Remove this command in release build.
 			{
 				Name:  "clear-cache",
 				Usage: "Clear cache used in \"pull\" command",

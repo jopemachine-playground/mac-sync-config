@@ -13,3 +13,5 @@ Press 'p' for patching
 Press 'e' to edit the file before pushing
 Press 'q' to quit
 `
+
+const PRESS_ANYKEY_HELP = `Press any key to continue.`
