@@ -128,12 +128,3 @@ func (git gitManipulator) IsUpdated(cwd string, filePath string) bool {
 
 	return len(outputStr) != 0
 }
-
-func (git gitManipulator) EditFile(filePath string) {
-	VimCmd := exec.Command("vim", filePath)
-	VimCmd.Stdin = os.Stdin
-	VimCmd.Stdout = os.Stdout
-	VimCmd.Stderr = os.Stderr
-	err := VimCmd.Run()
-	Utils.PanicIfErr(err)
-}

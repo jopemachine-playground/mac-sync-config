@@ -107,7 +107,7 @@ func PushConfigFiles() {
 				Git.ShowDiff(tempPath, updatedFilePath.convertedPath)
 				shouldAdd = Utils.MakeYesNoQuestion()
 			} else if userResp == Utils.QUESTION_RESULT_EDIT {
-				Git.EditFile(tempPath)
+				EditFile(tempPath)
 			} else if userResp == Utils.QUESTION_RESULT_PATCH {
 				Git.PatchFile(tempPath, updatedFilePath.convertedPath)
 				partiallyPatched = true
@@ -215,7 +215,7 @@ func PullRemoteConfigs(nameFilter string) {
 			userResp := Utils.MakeQuestion(Utils.PULL_CONFIG_ALLOWED_KEYS)
 
 			if userResp == Utils.QUESTION_RESULT_EDIT {
-				Git.EditFile(srcPath)
+				EditFile(srcPath)
 			} else if userResp == Utils.QUESTION_RESULT_SHOW_DIFF {
 				Git.ShowDiff(tempPath, srcPath)
 				shouldAdd = Utils.MakeYesNoQuestion()

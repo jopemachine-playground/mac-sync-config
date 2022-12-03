@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"os/exec"
 
 	Utils "github.com/jopemachine/mac-sync-config/utils"
 )
@@ -34,5 +35,14 @@ func WriteJSON(filePath string, jsonData map[string]string) {
 	Utils.PanicIfErr(err)
 
 	err = ioutil.WriteFile(absPath, bytesToWrite, os.ModePerm)
+	Utils.PanicIfErr(err)
+}
+
+func EditFile(filePath string) {
+	VimCmd := exec.Command("vim", filePath)
+	VimCmd.Stdin = os.Stdin
+	VimCmd.Stdout = os.Stdout
+	VimCmd.Stderr = os.Stderr
+	err := VimCmd.Run()
 	Utils.PanicIfErr(err)
 }
