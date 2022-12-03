@@ -77,7 +77,7 @@ func PullRemoteConfigs(profileName string) {
 				localConfigFilePath,
 			})
 		} else {
-			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", configPathIdx+1, len(configPathsToSync)))
+			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", configPathIdx+1, len(filteredConfigPathsToSync)))
 			MacSyncConfig.Logger.Info(fmt.Sprintf("%s %s", progressStr, color.MagentaString(path.Base(remoteConfigFilePath))))
 			MacSyncConfig.Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", localConfigFilePath)))
 			MacSyncConfig.Logger.Log(color.New(color.FgCyan, color.Bold).Sprintf(MacSyncConfig.PULL_HELP_MSG))
@@ -91,7 +91,7 @@ func PullRemoteConfigs(profileName string) {
 				MacSyncConfig.Git.ShowDiff(tempConfigsRepoDirPath, remoteConfigFilePath)
 				MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP_MSG)
 				shouldAdd = Utils.MakeYesNoQuestion()
-			} else {
+			} else if userResp == Utils.QUESTION_RESULT_IGNORE {
 				shouldAdd = false
 			}
 
