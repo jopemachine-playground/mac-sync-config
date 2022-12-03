@@ -35,8 +35,7 @@ func (git gitManipulator) PatchFile(cwd string, filePath string) {
 	gitPatchCmd.Stdin = os.Stdin
 	gitPatchCmd.Stdout = os.Stdout
 	gitPatchCmd.Stderr = os.Stderr
-	err := gitPatchCmd.Run()
-	Utils.PanicIfErr(err)
+	Utils.PanicIfErr(gitPatchCmd.Run())
 }
 
 func (git gitManipulator) Commit(cwd string) {
@@ -50,10 +49,9 @@ func (git gitManipulator) Commit(cwd string) {
 	gitCommitCmd.Stdin = os.Stdin
 	gitCommitCmd.Stdout = os.Stdout
 	gitCommitCmd.Stderr = os.Stderr
-	err := gitCommitCmd.Run()
 
 	// Assume the error is caused by user's abort.
-	if err != nil {
+	if err := gitCommitCmd.Run(); err != nil {
 		Logger.Error("Git commit aborted.")
 		os.Exit(1)
 	}
@@ -67,8 +65,7 @@ func (git gitManipulator) Push(cwd string) {
 	gitPushCmd.Dir = cwd
 	gitPushCmd.Stdout = os.Stdout
 	gitPushCmd.Stderr = os.Stderr
-	err := gitPushCmd.Run()
-	Utils.PanicIfErr(err)
+	Utils.PanicIfErr(gitPushCmd.Run())
 	Logger.NewLine()
 }
 

@@ -109,10 +109,10 @@ func PushConfigFiles(profileName string) {
 
 		MacSyncConfig.Logger.NewLine()
 
-		MacSyncConfig.Logger.Info("Config files pushed successfully.")
+		MacSyncConfig.Logger.Info(color.New(color.FgCyan, color.Bold).Sprintf("Config files pushed successfully."))
 	} else {
-		MacSyncConfig.Logger.Info("No file pushed.")
+		MacSyncConfig.Logger.Success("No file pushed.")
 	}
 
-	os.RemoveAll(tempConfigsRepoDirPath)
+	Utils.PanicIfErr(os.RemoveAll(tempConfigsRepoDirPath))
 }

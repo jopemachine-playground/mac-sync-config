@@ -110,8 +110,7 @@ func GetKeychainPreference() KeychainPreferenceType {
 	} else if err != nil {
 		panic(err)
 	} else {
-		err = json.Unmarshal(dat, &config)
-		if err != nil {
+		if json.Unmarshal(dat, &config); err != nil {
 			Logger.Error("JSON data seems to be malformed or outdated.\nPress \"y\" to enter new information or press \"n\" to ignore it.")
 			yes := Utils.MakeYesNoQuestion()
 			if yes {
@@ -133,8 +132,7 @@ func WriteLocalPreference(localPreference map[string]string) {
 	localPreferencePath := RelativePathToAbs(LocalPreferencePath)
 
 	if _, err := os.Stat(localPreferenceDir); errors.Is(err, os.ErrNotExist) {
-		err := os.MkdirAll(localPreferenceDir, os.ModePerm)
-		Utils.PanicIfErr(err)
+		Utils.PanicIfErr(os.MkdirAll(localPreferenceDir, os.ModePerm))
 	} else if _, err := os.Stat(localPreferencePath); !errors.Is(err, os.ErrNotExist) {
 		os.Remove(localPreferencePath)
 	}
@@ -152,8 +150,7 @@ func ReadMacSyncConfigFile(filepath string) (MacSyncConfigs, error) {
 
 	var config MacSyncConfigs
 
-	err = yaml.Unmarshal(dat, &config)
-	Utils.PanicIfErr(err)
+	Utils.PanicIfErr(yaml.Unmarshal(dat, &config))
 
 	return config, nil
 }

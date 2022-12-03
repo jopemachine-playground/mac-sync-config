@@ -66,8 +66,7 @@ func PullRemoteConfigs(profileName string) {
 
 		if MacSyncConfig.Flag_OverWrite {
 			if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
-				err = os.RemoveAll(dstPath)
-				Utils.PanicIfErr(err)
+				Utils.PanicIfErr(os.RemoveAll(dstPath))
 			}
 
 			selectedFilePaths = append(selectedFilePaths, PullPathInfo{
@@ -115,12 +114,10 @@ func PullRemoteConfigs(profileName string) {
 		MacSyncConfig.Logger.Success(fmt.Sprintf("\"%s\" updated.", path.originalPath))
 	}
 
-	if _, err := os.Stat(tempConfigsRepoDirPath); !errors.Is(err, os.ErrNotExist) {
-		os.RemoveAll(tempConfigsRepoDirPath)
-	}
+	Utils.PanicIfErr(os.RemoveAll(tempConfigsRepoDirPath))
 
 	if len(selectedFilePaths) > 0 {
-		MacSyncConfig.Logger.Info("Local config files are updated successfully.")
+		MacSyncConfig.Logger.Info(color.New(color.FgCyan, color.Bold).Sprintf("Local config files are updated successfully."))
 	} else {
 		MacSyncConfig.Logger.Info("Config files already up to date.")
 	}
