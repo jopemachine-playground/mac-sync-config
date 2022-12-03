@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	API "github.com/jopemachine/mac-sync-config/src"
@@ -11,11 +10,6 @@ import (
 )
 
 func main() {
-	if Utils.IsRootUser() {
-		API.Logger.Error("Running mac-sync-config as root is not allowed.\nIf you want to install some programs as root, prepend 'sudo' into the install command.")
-		os.Exit(1)
-	}
-
 	app := &cli.App{
 		Name:      "mac-sync-config",
 		Usage:     "Sync your config files between macs through your Github repository.",
@@ -85,7 +79,5 @@ func main() {
 		},
 	}
 
-	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
-	}
+	Utils.PanicIfErr(app.Run(os.Args))
 }
