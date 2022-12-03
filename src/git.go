@@ -1,7 +1,6 @@
 package src
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -15,35 +14,6 @@ type gitManipulator struct{}
 var (
 	Git gitManipulator
 )
-
-func (git gitManipulator) CloneConfigsRepository() string {
-	tempPath, err := os.MkdirTemp("", "mac-sync-config-temp-")
-	Utils.PanicIfErr(err)
-
-	// Should fully clone repository for commit and push
-	gitCloneArgs := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/%s %s", KeychainPreference.GithubId, KeychainPreference.MacSyncConfigGitRepositoryName, tempPath))
-	gitCloneCmd := exec.Command(gitCloneArgs[0], gitCloneArgs[1:]...)
-	output, err := gitCloneCmd.CombinedOutput()
-	Utils.PanicIfErrWithMsg(string(output), err)
-
-	tempConfigDirPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
-
-	if _, err := os.Stat(tempConfigDirPath); errors.Is(err, os.ErrNotExist) {
-		err = os.Mkdir(tempConfigDirPath, os.ModePerm)
-		Utils.PanicIfErr(err)
-	}
-
-	return tempPath
-}
-
-func (git gitManipulator) GetRemoteConfigHashId() string {
-	gitLsRemoteArgs := strings.Fields(fmt.Sprintf("git ls-remote https://github.com/%s/%s HEAD", KeychainPreference.GithubId, KeychainPreference.MacSyncConfigGitRepositoryName))
-	gitLsRemoteCmd := exec.Command(gitLsRemoteArgs[0], gitLsRemoteArgs[1:]...)
-	stdout, err := gitLsRemoteCmd.CombinedOutput()
-	Utils.PanicIfErr(err)
-
-	return strings.TrimSpace(strings.Split(fmt.Sprintf("%s", stdout), "HEAD")[0])
-}
 
 func (git gitManipulator) AddAll(cwd string) {
 	gitAddAllCmd := exec.Command("git", "add", cwd)

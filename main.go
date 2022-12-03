@@ -5,6 +5,7 @@ import (
 	"os"
 
 	API "github.com/jopemachine/mac-sync-config/src"
+	Commands "github.com/jopemachine/mac-sync-config/src/commands"
 	Utils "github.com/jopemachine/mac-sync-config/utils"
 	"github.com/urfave/cli/v2"
 )
@@ -26,7 +27,7 @@ func main() {
 				Name:  "push",
 				Usage: "Push the local config files to the remote repository",
 				Action: func(*cli.Context) error {
-					API.PushConfigFiles()
+					Commands.PushConfigFiles()
 					return nil
 				},
 				Flags: []cli.Flag{
@@ -42,7 +43,7 @@ func main() {
 				Usage:     "Pull the config files from the remote repository",
 				ArgsUsage: "Filter to basename of the config file",
 				Action: func(c *cli.Context) error {
-					API.PullRemoteConfigs(c.Args().First())
+					Commands.PullRemoteConfigs(c.Args().First())
 					return nil
 				},
 				Flags: []cli.Flag{
@@ -58,7 +59,7 @@ func main() {
 				Aliases: []string{"ls"},
 				Usage:   "Show the configuration files list",
 				Action: func(*cli.Context) error {
-					API.PrintMacSyncConfigs()
+					Commands.PrintMacSyncConfigs()
 					return nil
 				},
 			},
@@ -67,7 +68,7 @@ func main() {
 				Aliases: []string{"profile"},
 				Usage:   "Switch the profile.  This could be useful when you need to the configuration set",
 				Action: func(c *cli.Context) error {
-					API.SwitchProfile(c.Args().First())
+					Commands.SwitchProfile(c.Args().First())
 					return nil
 				},
 			},

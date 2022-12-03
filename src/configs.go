@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 
 	Utils "github.com/jopemachine/mac-sync-config/utils"
 	"github.com/keybase/go-keychain"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -161,4 +163,20 @@ func ClearCache() {
 		panic(err)
 	}
 	Logger.Success("Cache file cleared.")
+}
+
+func ReadMacSyncConfigFile(filepath string) (MacSyncConfigs, error) {
+	if _, err := os.Stat(filepath); errors.Is(err, os.ErrNotExist) {
+		return MacSyncConfigs{}, err
+	}
+
+	dat, err := ioutil.ReadFile(filepath)
+	Utils.PanicIfErr(err)
+
+	var config MacSyncConfigs
+
+	err = yaml.Unmarshal(dat, &config)
+	Utils.PanicIfErr(err)
+
+	return config, nil
 }

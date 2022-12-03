@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	Utils "github.com/jopemachine/mac-sync-config/utils"
 )
@@ -45,4 +46,16 @@ func EditFile(filePath string) {
 	VimCmd.Stderr = os.Stderr
 	err := VimCmd.Run()
 	Utils.PanicIfErr(err)
+}
+
+func CopyFiles(srcPath string, dstPath string) {
+	dirPath := filepath.Dir(dstPath)
+
+	mkdirCmd := exec.Command("mkdir", "-p", dirPath)
+	output, err := mkdirCmd.CombinedOutput()
+	Utils.PanicIfErrWithMsg(string(output), err)
+
+	cpCmd := exec.Command("cp", "-fR", srcPath, dstPath)
+	output, err = cpCmd.CombinedOutput()
+	Utils.PanicIfErrWithMsg(string(output), err)
 }
