@@ -49,7 +49,7 @@ func PullRemoteConfigs(profileName string) {
 		srcPath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 
 		if _, err := os.Stat(srcPath); errors.Is(err, os.ErrNotExist) {
-			MacSyncConfig.Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.\nEnsure to push the config file before pulling.", configPathToSync, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
+			MacSyncConfig.Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.", configPathToSync, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
 			MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP_MSG)
 			Utils.WaitResponse()
 			MacSyncConfig.Logger.ClearConsole()

@@ -33,7 +33,7 @@ func (logger loggerType) Info(msg string) {
 }
 
 func (logger loggerType) Warning(msg string) {
-	Logger.Log(fmt.Sprintf("%s %s", color.YellowString("⚠️"), color.RedString(msg)))
+	Logger.Log(fmt.Sprintf("%s %s", color.YellowString("⚠️"), msg))
 }
 
 func (logger loggerType) Question(msg string) {
