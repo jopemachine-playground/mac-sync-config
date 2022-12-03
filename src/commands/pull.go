@@ -58,7 +58,7 @@ func PullRemoteConfigs(profileName string) {
 
 		if _, err := os.Stat(srcPath); errors.Is(err, os.ErrNotExist) {
 			MacSyncConfig.Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.\nEnsure to push the config file before pulling.", configPathToSync, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
-			MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP)
+			MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP_MSG)
 			Utils.WaitResponse()
 			MacSyncConfig.Logger.ClearConsole()
 			continue
@@ -87,7 +87,7 @@ func PullRemoteConfigs(profileName string) {
 			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", configPathIdx+1, len(configPathsToSync)))
 			MacSyncConfig.Logger.Info(fmt.Sprintf("%s %s", progressStr, color.MagentaString(path.Base(srcPath))))
 			MacSyncConfig.Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", dstPath)))
-			MacSyncConfig.Logger.Log(color.New(color.FgCyan, color.Bold).Sprintf(MacSyncConfig.PULL_HELP))
+			MacSyncConfig.Logger.Log(color.New(color.FgCyan, color.Bold).Sprintf(MacSyncConfig.PULL_HELP_MSG))
 
 			shouldAdd := true
 			userResp := Utils.MakeQuestion(Utils.PULL_CONFIG_ALLOWED_KEYS)
@@ -96,7 +96,7 @@ func PullRemoteConfigs(profileName string) {
 				MacSyncConfig.EditFile(srcPath)
 			} else if userResp == Utils.QUESTION_RESULT_SHOW_DIFF {
 				MacSyncConfig.Git.ShowDiff(tempPath, srcPath)
-				MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP)
+				MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP_MSG)
 				shouldAdd = Utils.MakeYesNoQuestion()
 			} else {
 				shouldAdd = false

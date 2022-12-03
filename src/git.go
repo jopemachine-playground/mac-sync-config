@@ -52,6 +52,7 @@ func (git gitManipulator) Commit(cwd string) {
 	gitCommitCmd.Stderr = os.Stderr
 	err := gitCommitCmd.Run()
 
+	// Assume the error is caused by user's abort.
 	if err != nil {
 		Logger.Error("Git commit aborted.")
 		os.Exit(1)
@@ -80,7 +81,7 @@ func (git gitManipulator) ShowDiff(cwd string, filePath string) {
 	err := checkDiffCmd.Run()
 
 	if err == nil {
-		Logger.Info("No diff")
+		Logger.Info("No diff to show")
 	} else {
 		gitShowDiffCmd := exec.Command("git", "diff", filePath)
 		gitShowDiffCmd.Dir = cwd

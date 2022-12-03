@@ -45,7 +45,7 @@ func PushConfigFiles(profileName string) {
 		if _, err := os.Stat(absSrcConfigPathToSync); errors.Is(err, os.ErrNotExist) {
 			MacSyncConfig.Logger.Warning(fmt.Sprintf("\"%s\" not found in the local computer.", configPathToSync))
 			Utils.WaitResponse()
-			MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP)
+			MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP_MSG)
 			MacSyncConfig.Logger.ClearConsole()
 			continue
 		}
@@ -65,7 +65,7 @@ func PushConfigFiles(profileName string) {
 		for fileIdx, updatedFilePath := range updatedFilePaths {
 			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", fileIdx+1, len(updatedFilePaths)))
 			MacSyncConfig.Logger.Info(fmt.Sprintf("%s %s", progressStr, color.MagentaString(path.Base(updatedFilePath.convertedPath))))
-			MacSyncConfig.Logger.Log(color.New(color.FgCyan, color.Bold).Sprint(MacSyncConfig.PUSH_HELP))
+			MacSyncConfig.Logger.Log(color.New(color.FgCyan, color.Bold).Sprint(MacSyncConfig.PUSH_HELP_MSG))
 
 			userResp := Utils.MakeQuestion(Utils.PUSH_CONFIG_ALLOWED_KEYS)
 			shouldAdd := true
@@ -73,10 +73,10 @@ func PushConfigFiles(profileName string) {
 
 			if userResp == Utils.QUESTION_RESULT_SHOW_DIFF {
 				MacSyncConfig.Git.ShowDiff(tempPath, updatedFilePath.convertedPath)
-				MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP)
+				MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP_MSG)
 				shouldAdd = Utils.MakeYesNoQuestion()
 			} else if userResp == Utils.QUESTION_RESULT_EDIT {
-				MacSyncConfig.EditFile(tempPath)
+				MacSyncConfig.EditFile(updatedFilePath.convertedPath)
 			} else if userResp == Utils.QUESTION_RESULT_PATCH {
 				MacSyncConfig.Git.PatchFile(tempPath, updatedFilePath.convertedPath)
 				partiallyPatched = true

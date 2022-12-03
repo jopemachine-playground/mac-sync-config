@@ -49,8 +49,7 @@ func (github gitHubManipulator) GetRemoteConfigHashId() string {
 }
 
 func (github gitHubManipulator) GetMacSyncConfigs() string {
-	// TODO: Add branch name as env variable
-	// TODO: Add file name as env variable
+	// TODO: Might be useful to add branch name as env variable
 	resp, err := req.C().R().
 		SetHeader("Authorization", fmt.Sprintf("token %s", KeychainPreference.GithubToken)).
 		SetHeader("Cache-control", "no-cache").
