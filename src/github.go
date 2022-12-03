@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/imroc/req/v3"
-	Utils "github.com/jopemachine/mac-sync-config/src/utils"
+	Utils "github.com/jopemachine/mac-sync-config/utils"
 )
 
 func GetMacSyncConfigs() string {

@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	Utils "github.com/jopemachine/mac-sync-config/src/utils"
+	Utils "github.com/jopemachine/mac-sync-config/utils"
 )
 
 func ReadJSON(filePath string) map[string]string {

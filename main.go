@@ -5,12 +5,12 @@ import (
 	"os"
 
 	API "github.com/jopemachine/mac-sync-config/src"
-	API_UTILS "github.com/jopemachine/mac-sync-config/src/utils"
+	Utils "github.com/jopemachine/mac-sync-config/utils"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	if API_UTILS.IsRootUser() {
+	if Utils.IsRootUser() {
 		API.Logger.Error("Running mac-sync-config as root is not allowed.\nIf you want to install some programs as root, prepend 'sudo' into the install command.")
 		os.Exit(1)
 	}

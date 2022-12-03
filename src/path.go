@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	Utils "github.com/jopemachine/mac-sync-config/src/utils"
+	Utils "github.com/jopemachine/mac-sync-config/utils"
 )
 
 var User_Profile = "DEFAULT_USER_PROFILE"
