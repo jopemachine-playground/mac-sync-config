@@ -12,8 +12,8 @@ import (
 )
 
 type PushPathInfo struct {
-	originalPath  string
-	convertedPath string
+	originalPath string
+	absPath      string
 }
 
 func PushConfigFiles(profileName string) {
@@ -34,7 +34,7 @@ func PushConfigFiles(profileName string) {
 		configRootPath := fmt.Sprintf("%s/%s", tempConfigsRepoDirPath, MacSyncConfig.GetRemoteConfigFolderName())
 		absSrcConfigPathToSync := MacSyncConfig.RelativePathToAbs(configPathToSync)
 
-		dstPath := fmt.Sprintf("%s%s", configRootPath, MacSyncConfig.ReplaceUserName(MacSyncConfig.RelativePathToAbs(configPathToSync)))
+		dstPath := fmt.Sprintf("%s%s", configRootPath, MacSyncConfig.ReplaceMacOSUserName(MacSyncConfig.RelativePathToAbs(configPathToSync)))
 
 		// Delete files for update if the files already exist
 		if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
@@ -53,7 +53,7 @@ func PushConfigFiles(profileName string) {
 		MacSyncConfig.CopyFiles(absSrcConfigPathToSync, dstPath)
 		Utils.PanicIfErr(err)
 
-		if haveDiff := MacSyncConfig.Git.IsUpdated(tempConfigsRepoDirPath, dstPath); haveDiff {
+		if diffExist := MacSyncConfig.Git.IsUpdated(tempConfigsRepoDirPath, dstPath); diffExist {
 			updatedFilePaths = append(updatedFilePaths, PushPathInfo{configPathToSync, dstPath})
 		}
 	}
@@ -64,7 +64,7 @@ func PushConfigFiles(profileName string) {
 	} else {
 		for fileIdx, updatedFilePath := range updatedFilePaths {
 			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", fileIdx+1, len(updatedFilePaths)))
-			MacSyncConfig.Logger.Info(fmt.Sprintf("%s %s", progressStr, color.MagentaString(path.Base(updatedFilePath.convertedPath))))
+			MacSyncConfig.Logger.Info(fmt.Sprintf("%s %s", progressStr, color.MagentaString(path.Base(updatedFilePath.absPath))))
 			MacSyncConfig.Logger.Log(color.New(color.FgCyan, color.Bold).Sprint(MacSyncConfig.PUSH_HELP_MSG))
 
 			userResp := Utils.MakeQuestion(Utils.PUSH_CONFIG_ALLOWED_KEYS)
@@ -72,13 +72,13 @@ func PushConfigFiles(profileName string) {
 			partiallyPatched := false
 
 			if userResp == Utils.QUESTION_RESULT_SHOW_DIFF {
-				MacSyncConfig.Git.ShowDiff(tempConfigsRepoDirPath, updatedFilePath.convertedPath)
+				MacSyncConfig.Git.ShowDiff(tempConfigsRepoDirPath, updatedFilePath.absPath)
 				MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP_MSG)
 				shouldAdd = Utils.MakeYesNoQuestion()
 			} else if userResp == Utils.QUESTION_RESULT_EDIT {
-				MacSyncConfig.EditFile(updatedFilePath.convertedPath)
+				MacSyncConfig.EditFile(updatedFilePath.absPath)
 			} else if userResp == Utils.QUESTION_RESULT_PATCH {
-				MacSyncConfig.Git.PatchFile(tempConfigsRepoDirPath, updatedFilePath.convertedPath)
+				MacSyncConfig.Git.PatchFile(tempConfigsRepoDirPath, updatedFilePath.absPath)
 				partiallyPatched = true
 			} else if userResp == Utils.QUESTION_RESULT_IGNORE {
 				shouldAdd = false
@@ -86,7 +86,7 @@ func PushConfigFiles(profileName string) {
 
 			if shouldAdd {
 				if !partiallyPatched {
-					MacSyncConfig.Git.AddFile(tempConfigsRepoDirPath, updatedFilePath.convertedPath)
+					MacSyncConfig.Git.AddFile(tempConfigsRepoDirPath, updatedFilePath.absPath)
 				}
 				selectedUpdatedFilePaths = append(selectedUpdatedFilePaths, updatedFilePath)
 			}

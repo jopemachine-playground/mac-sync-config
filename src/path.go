@@ -22,7 +22,7 @@ func GetUserProfile() string {
 	return "DEFAULT_USER_PROFILE"
 }
 
-func ReplaceUserName(path string) string {
+func ReplaceMacOSUserName(path string) string {
 	if strings.HasPrefix(path, "/Users/") {
 		return strings.Replace(path, fmt.Sprintf("/Users/%s", Utils.GetMacosUserName()), fmt.Sprintf("/Users/%s", GetUserProfile()), 1)
 	}

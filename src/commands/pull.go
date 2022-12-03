@@ -12,9 +12,9 @@ import (
 )
 
 type PullPathInfo struct {
-	originalPath string
-	srcPath      string
-	dstPath      string
+	originalPath         string
+	remoteConfigFilePath string
+	localConfigFilePath  string
 }
 
 func PullRemoteConfigs(profileName string) {
@@ -35,20 +35,12 @@ func PullRemoteConfigs(profileName string) {
 
 	for _, configPathToSync := range configPathsToSync {
 		configRootPath := fmt.Sprintf("%s/%s", tempConfigsRepoDirPath, MacSyncConfig.GetRemoteConfigFolderName())
-		dstPath := fmt.Sprintf("%s%s", configRootPath, MacSyncConfig.ReplaceUserName(MacSyncConfig.RelativePathToAbs(configPathToSync)))
+		absConfigPathToSync := MacSyncConfig.ReplaceMacOSUserName(MacSyncConfig.RelativePathToAbs(configPathToSync))
 
-		if haveDiff := MacSyncConfig.Git.IsUpdated(tempConfigsRepoDirPath, dstPath); haveDiff {
-			filteredConfigPathsToSync = append(filteredConfigPathsToSync, configPathToSync)
-		}
-	}
+		remoteConfigFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
+		localConfigFilePath := MacSyncConfig.RelativePathToAbs(configPathToSync)
 
-	for configPathIdx, configPathToSync := range filteredConfigPathsToSync {
-		configRootPath := fmt.Sprintf("%s/%s", tempConfigsRepoDirPath, MacSyncConfig.GetRemoteConfigFolderName())
-
-		absConfigPathToSync := MacSyncConfig.ReplaceUserName(MacSyncConfig.RelativePathToAbs(configPathToSync))
-		srcPath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
-
-		if _, err := os.Stat(srcPath); errors.Is(err, os.ErrNotExist) {
+		if _, err := os.Stat(remoteConfigFilePath); errors.Is(err, os.ErrNotExist) {
 			MacSyncConfig.Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.", configPathToSync, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
 			MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP_MSG)
 			Utils.WaitResponse()
@@ -56,37 +48,47 @@ func PullRemoteConfigs(profileName string) {
 			continue
 		}
 
-		dstPath := MacSyncConfig.RelativePathToAbs(configPathToSync)
-
-		// To show diff, copy dstPath file to srcPath.
+		// To find out if it is updated and to show diff, copy dstPath file to srcPath.
 		// This should be reset before copying from dstFile to srcPath.
-		if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
-			MacSyncConfig.CopyFiles(dstPath, srcPath)
+		if _, err := os.Stat(localConfigFilePath); !errors.Is(err, os.ErrNotExist) {
+			MacSyncConfig.CopyFiles(localConfigFilePath, remoteConfigFilePath)
 		}
 
+		if diffExist := MacSyncConfig.Git.IsUpdated(tempConfigsRepoDirPath, remoteConfigFilePath); diffExist {
+			filteredConfigPathsToSync = append(filteredConfigPathsToSync, configPathToSync)
+		}
+	}
+
+	for configPathIdx, configPathToSync := range filteredConfigPathsToSync {
+		configRootPath := fmt.Sprintf("%s/%s", tempConfigsRepoDirPath, MacSyncConfig.GetRemoteConfigFolderName())
+		absConfigPathToSync := MacSyncConfig.ReplaceMacOSUserName(MacSyncConfig.RelativePathToAbs(configPathToSync))
+
+		remoteConfigFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
+		localConfigFilePath := MacSyncConfig.RelativePathToAbs(configPathToSync)
+
 		if MacSyncConfig.Flag_OverWrite {
-			if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
-				Utils.PanicIfErr(os.RemoveAll(dstPath))
+			if _, err := os.Stat(localConfigFilePath); !errors.Is(err, os.ErrNotExist) {
+				Utils.PanicIfErr(os.RemoveAll(localConfigFilePath))
 			}
 
 			selectedFilePaths = append(selectedFilePaths, PullPathInfo{
 				configPathToSync,
-				srcPath,
-				dstPath,
+				remoteConfigFilePath,
+				localConfigFilePath,
 			})
 		} else {
 			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", configPathIdx+1, len(configPathsToSync)))
-			MacSyncConfig.Logger.Info(fmt.Sprintf("%s %s", progressStr, color.MagentaString(path.Base(srcPath))))
-			MacSyncConfig.Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", dstPath)))
+			MacSyncConfig.Logger.Info(fmt.Sprintf("%s %s", progressStr, color.MagentaString(path.Base(remoteConfigFilePath))))
+			MacSyncConfig.Logger.Log(color.HiBlackString(fmt.Sprintf("Full path: %s", localConfigFilePath)))
 			MacSyncConfig.Logger.Log(color.New(color.FgCyan, color.Bold).Sprintf(MacSyncConfig.PULL_HELP_MSG))
 
 			shouldAdd := true
 			userResp := Utils.MakeQuestion(Utils.PULL_CONFIG_ALLOWED_KEYS)
 
 			if userResp == Utils.QUESTION_RESULT_EDIT {
-				MacSyncConfig.EditFile(srcPath)
+				MacSyncConfig.EditFile(remoteConfigFilePath)
 			} else if userResp == Utils.QUESTION_RESULT_SHOW_DIFF {
-				MacSyncConfig.Git.ShowDiff(tempConfigsRepoDirPath, srcPath)
+				MacSyncConfig.Git.ShowDiff(tempConfigsRepoDirPath, remoteConfigFilePath)
 				MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP_MSG)
 				shouldAdd = Utils.MakeYesNoQuestion()
 			} else {
@@ -96,8 +98,8 @@ func PullRemoteConfigs(profileName string) {
 			if shouldAdd {
 				selectedFilePaths = append(selectedFilePaths, PullPathInfo{
 					configPathToSync,
-					srcPath,
-					dstPath,
+					remoteConfigFilePath,
+					localConfigFilePath,
 				})
 			}
 
@@ -106,11 +108,11 @@ func PullRemoteConfigs(profileName string) {
 	}
 
 	for _, path := range selectedFilePaths {
-		MacSyncConfig.Git.Reset(tempConfigsRepoDirPath, path.srcPath)
-		if _, err := os.Stat(path.dstPath); !errors.Is(err, os.ErrNotExist) {
-			Utils.PanicIfErr(os.RemoveAll(path.dstPath))
+		MacSyncConfig.Git.Reset(tempConfigsRepoDirPath, path.remoteConfigFilePath)
+		if _, err := os.Stat(path.localConfigFilePath); !errors.Is(err, os.ErrNotExist) {
+			Utils.PanicIfErr(os.RemoveAll(path.localConfigFilePath))
 		}
-		MacSyncConfig.CopyFiles(path.srcPath, path.dstPath)
+		MacSyncConfig.CopyFiles(path.remoteConfigFilePath, path.localConfigFilePath)
 		MacSyncConfig.Logger.Success(fmt.Sprintf("\"%s\" updated.", path.originalPath))
 	}
 
