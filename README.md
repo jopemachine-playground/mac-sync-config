@@ -51,10 +51,10 @@ USAGE:
    mac-sync-config command [command options] [arguments...]
 
 COMMANDS:
-   push                 Push local config files to remote
-   pull                 Pull configs from remote
-   list, ls             Show the configuration files list
-   clear-cache          Clear cache
+   push                     Push the local config files to the remote repository
+   pull                     Pull the config files from the remote repository
+   list, ls                 Show the configuration files list
+   switch-profile, profile  Switch the profile. This could be useful when you need to the configuration set
 ```
 
 ## Example
