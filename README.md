@@ -6,6 +6,8 @@ Sync your config files between macs through your Github repository.
 
 I made this for resolving the [keeping the consistent configs issue](https://apple.stackexchange.com/questions/30966/how-can-i-keep-settings-consistent-between-macs) between mac.
 
+⚠️ Note that this project is still Experimental, could include unexpected bug. You can issue the bug with its stacktrace using `debug` flag.
+
 ## Why?
 
 - No need to write any shell scripts to sync config files.
@@ -18,13 +20,13 @@ I made this for resolving the [keeping the consistent configs issue](https://app
 
 ## How to set up
 
-1. Create a private repository for `mac-sync-config` in Github.
+1. Create a repository for `mac-sync-config` through your Github account.
 
 2. Add `mac-sync-configs.yaml` to the `main` branch of the repository.
 
-3. Run `mac-sync-config push` to upload the configuration files to the repository. You need to enter Github access token when you first try it.
+3. Run `mac-sync-config push` to upload the configuration files to the repository. Note that you need to enter Github access token when you first try it.
 
-4. In another mac, run `mac-sync-config pull` to download configuration files from the repository.
+4. Run `mac-sync-config pull` to download configuration files from the repository.
 
 ## Configuration
 
@@ -36,12 +38,28 @@ You can also specify directory path to the below paths.
 
 Example:
 
-```
+```yaml
 sync:
-  - ~/Library/Preferences/com.apple.dock.plist
+	# You can use '~'.
+	- ~/.tmux.conf
+	# You can specify directory.
+	- ~/Library/Application Support/PopClip/
 ```
 
-## Usage
+## Multiple profiles
+
+You can use multiple profiles for your own purpose.
+
+For example, it could be useful when you want to save multiple config files to each profile.
+
+You can use profile name to upload from or to the profile folder.
+
+```
+$ mac-sync-config push [profile name]
+$ mac-sync-config pull [profile name]
+```
+
+## CLI Usage
 
 ```
 NAME:
@@ -57,6 +75,6 @@ COMMANDS:
    switch-profile, profile  Switch the profile. This could be useful when you need to the configuration set
 ```
 
-## Example
+## `mac-sync-configs` Example
 
-- [mac-sync-configs](https://github.com/jopemachine/mac-sync-configs) - my config files
+- [my-mac-sync-configs](https://github.com/jopemachine/my-mac-sync-configs) - my `mac-sync-configs` config files.

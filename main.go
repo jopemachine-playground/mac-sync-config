@@ -68,7 +68,7 @@ func main() {
 			},
 			{
 				Name:  "delete-keychain",
-				Usage: "Delete keychain config",
+				Usage: "Delete keychain configurations",
 				Action: func(cliContext *cli.Context) error {
 					Commands.DeleteKeychainConfig()
 					return nil
@@ -78,6 +78,7 @@ func main() {
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:        "debug",
+				Usage:       "Use panic instead of log.Fatal to see stacktrace",
 				Destination: &Utils.Flags.UsePanic,
 			},
 		},
