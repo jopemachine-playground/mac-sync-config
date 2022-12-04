@@ -40,10 +40,10 @@ Example:
 
 ```yaml
 sync:
-	# You can use '~'.
-	- ~/.tmux.conf
-	# You can specify directory.
-	- ~/Library/Application Support/PopClip/
+  # You can use '~'.
+  - ~/.tmux.conf
+  # You can specify directory.
+  - ~/Library/Application Support/PopClip/
 ```
 
 ## Multiple profiles
