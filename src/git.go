@@ -40,7 +40,7 @@ func (git gitManipulator) PatchFile(cwd string, filePath string) {
 
 func (git gitManipulator) Commit(cwd string) {
 	Logger.Info("Enter the commit message.")
-	gitCommitCmd := exec.Command("git", "commit", "--author", GH_BOT_EMAIL, "--allow-empty")
+	gitCommitCmd := exec.Command("git", "commit", "--author", GH_BOT_EMAIL)
 	gitCommitCmd.Dir = cwd
 	gitCommitCmd.Env = append(gitCommitCmd.Env, "GIT_COMMITTER_NAME=\"Mac-sync-config\"")
 	gitCommitCmd.Env = append(gitCommitCmd.Env, "EDITOR=vim")

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/fatih/color"
 	MacSyncConfig "github.com/jopemachine/mac-sync-config/src"
@@ -36,6 +37,10 @@ func PushConfigFiles(profileName string) {
 
 		dstPath := fmt.Sprintf("%s%s", configRootPath,
 			MacSyncConfig.ReplaceMacOSUserName(MacSyncConfig.RelativePathToAbs(configPathToSync)))
+
+		if Utils.Flags.FileNameFilter != "" && !strings.Contains(path.Base(configPathToSync), Utils.Flags.FileNameFilter) {
+			continue
+		}
 
 		if _, err := os.Stat(absSrcConfigPathToSync); errors.Is(err, os.ErrNotExist) {
 			MacSyncConfig.Logger.Warning(fmt.Sprintf("\"%s\" not found in the local computer.", configPathToSync))

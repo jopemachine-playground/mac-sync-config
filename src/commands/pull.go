@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/fatih/color"
 	MacSyncConfig "github.com/jopemachine/mac-sync-config/src"
@@ -38,6 +39,10 @@ func PullRemoteConfigs(profileName string) {
 
 		remoteConfigFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 		localConfigFilePath := MacSyncConfig.RelativePathToAbs(configPathToSync)
+
+		if Utils.Flags.FileNameFilter != "" && !strings.Contains(path.Base(configPathToSync), Utils.Flags.FileNameFilter) {
+			continue
+		}
 
 		if _, err := os.Stat(remoteConfigFilePath); errors.Is(err, os.ErrNotExist) {
 			MacSyncConfig.Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.", configPathToSync, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))

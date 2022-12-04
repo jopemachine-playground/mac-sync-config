@@ -30,6 +30,11 @@ func main() {
 						Aliases:     []string{"o"},
 						Destination: &Utils.Flags.Overwrite,
 					},
+					&cli.StringFlag{
+						Name:        "filter",
+						Aliases:     []string{"f"},
+						Destination: &Utils.Flags.FileNameFilter,
+					},
 				},
 			},
 			{
@@ -45,6 +50,11 @@ func main() {
 						Name:        "overwrite",
 						Aliases:     []string{"o"},
 						Destination: &Utils.Flags.Overwrite,
+					},
+					&cli.StringFlag{
+						Name:        "filter",
+						Aliases:     []string{"f"},
+						Destination: &Utils.Flags.FileNameFilter,
 					},
 				},
 			},

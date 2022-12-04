@@ -2,7 +2,8 @@ package utils
 
 var (
 	Flags struct {
-		Overwrite bool
-		UsePanic  bool
+		Overwrite      bool
+		UsePanic       bool
+		FileNameFilter string
 	}
 )
