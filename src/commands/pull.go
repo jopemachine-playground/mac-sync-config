@@ -25,7 +25,8 @@ func PullRemoteConfigs(profileName string) {
 	MacSyncConfig.Logger.ClearConsole()
 
 	tempConfigsRepoDirPath := MacSyncConfig.Github.CloneConfigsRepository()
-	macSyncConfigs := MacSyncConfig.ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempConfigsRepoDirPath, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
+	macSyncConfigs := MacSyncConfig.ReadMacSyncConfigFile(
+		fmt.Sprintf("%s/%s", tempConfigsRepoDirPath, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
 
 	configPathsToSync := macSyncConfigs.ConfigPathsToSync
 	selectedFilePaths := []PullPathInfo{}

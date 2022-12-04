@@ -11,7 +11,9 @@ import (
 
 func ReplaceMacOSUserName(path string) string {
 	if strings.HasPrefix(path, "/Users/") {
-		return strings.Replace(path, fmt.Sprintf("/Users/%s", Utils.GetMacosUserName()), fmt.Sprintf("/Users/%s", GetProfileName()), 1)
+		return strings.Replace(path,
+			fmt.Sprintf("/Users/%s", Utils.GetMacosUserName()),
+			fmt.Sprintf("/Users/%s", GetProfileName()), 1)
 	}
 
 	return path

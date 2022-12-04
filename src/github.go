@@ -45,7 +45,10 @@ func (github gitHubManipulator) CloneConfigsRepository() string {
 }
 
 func (github gitHubManipulator) GetRemoteConfigHashId() string {
-	gitLsRemoteArgs := strings.Fields(fmt.Sprintf("git ls-remote https://github.com/%s/%s HEAD", KeychainPreference.GithubId, KeychainPreference.MacSyncConfigGitRepositoryName))
+	gitLsRemoteArgs := strings.Fields(fmt.Sprintf("git ls-remote https://github.com/%s/%s HEAD",
+		KeychainPreference.GithubId,
+		KeychainPreference.MacSyncConfigGitRepositoryName))
+
 	gitLsRemoteCmd := exec.Command(gitLsRemoteArgs[0], gitLsRemoteArgs[1:]...)
 	stdout, err := gitLsRemoteCmd.CombinedOutput()
 	Utils.FatalExitIfError(err)
