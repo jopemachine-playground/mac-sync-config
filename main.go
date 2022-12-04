@@ -60,9 +60,17 @@ func main() {
 			{
 				Name:    "switch-profile",
 				Aliases: []string{"profile"},
-				Usage:   "Switch the profile. This could be useful when you need to the configuration set",
+				Usage:   "Change default profile. This could be useful when you need to the configuration set",
 				Action: func(cliContext *cli.Context) error {
 					Commands.SwitchProfile(cliContext.Args().First())
+					return nil
+				},
+			},
+			{
+				Name:  "delete-keychain",
+				Usage: "Delete keychain config",
+				Action: func(cliContext *cli.Context) error {
+					Commands.DeleteKeychainConfig()
 					return nil
 				},
 			},

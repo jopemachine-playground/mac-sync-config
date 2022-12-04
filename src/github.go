@@ -55,7 +55,7 @@ func (github gitHubManipulator) GetRemoteConfigHashId() string {
 
 func (github gitHubManipulator) GetMacSyncConfigs() string {
 	resp, err := req.C().R().
-		SetHeader("Authorization", fmt.Sprintf("token %s", KeychainPreference.GithubToken)).
+		SetHeader("Authorization", fmt.Sprintf("token %s", KeychainPreference.GithubAccessToken)).
 		SetHeader("Cache-control", "no-cache").
 		SetPathParam("userName", KeychainPreference.GithubId).
 		SetPathParam("repoName", KeychainPreference.MacSyncConfigGitRepositoryName).

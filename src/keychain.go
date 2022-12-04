@@ -15,8 +15,8 @@ var KeychainPreference = GetKeychainPreference()
 
 type KeychainPreferenceType struct {
 	GithubId                       string `json:"github_id"`
-	GithubToken                    string `json:"github_token"`
-	MacSyncConfigGitRepositoryName string `json:"mac_sync_config_git_repository_name"`
+	GithubAccessToken              string `json:"github_access_token"`
+	MacSyncConfigGitRepositoryName string `json:"repository_name"`
 }
 
 func scanKeyChainPreference(config *KeychainPreferenceType) {
@@ -32,7 +32,7 @@ func scanKeyChainPreference(config *KeychainPreferenceType) {
 	Logger.Question("Enter your Github Access Token:")
 	ghToken := bufio.NewScanner(os.Stdin)
 	ghToken.Scan()
-	config.GithubToken = ghToken.Text()
+	config.GithubAccessToken = ghToken.Text()
 
 	Logger.Question("Enter Git repository name for saving the mac-sync-config's configuration files:")
 	repoName := bufio.NewScanner(os.Stdin)
@@ -65,9 +65,8 @@ func GetKeychainPreference() KeychainPreferenceType {
 		err = keychain.AddItem(keyChainItem)
 
 		if err == keychain.ErrorDuplicateItem {
-			err = keychain.DeleteItem(keyChainItem)
-			Utils.FatalExitIfError(err)
-			err = keychain.AddItem(keyChainItem)
+			Utils.FatalExitIfError(keychain.DeleteItem(keyChainItem))
+			Utils.FatalExitIfError(keychain.AddItem(keyChainItem))
 		}
 
 		Utils.FatalExitIfError(err)
@@ -80,7 +79,7 @@ func GetKeychainPreference() KeychainPreferenceType {
 			Logger.Error("JSON data seems to be malformed or outdated.\nPress \"y\" to enter new information or press \"n\" to ignore it.")
 
 			if yes := Utils.MakeYesNoQuestion(); yes {
-				keychain.DeleteGenericPasswordItem("Mac-sync-config", "jopemachine")
+				Utils.FatalExitIfError(keychain.DeleteGenericPasswordItem("Mac-sync-config", "jopemachine"))
 				Logger.Success("Keychain data deleted successfully.")
 			}
 		}

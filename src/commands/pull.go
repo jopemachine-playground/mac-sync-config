@@ -112,8 +112,8 @@ func PullRemoteConfigs(profileName string) {
 	Utils.FatalExitIfError(os.RemoveAll(tempConfigsRepoDirPath))
 
 	if len(selectedFilePaths) > 0 {
-		MacSyncConfig.Logger.Info(color.New(color.FgCyan, color.Bold).Sprintf("Local config files are updated successfully."))
+		MacSyncConfig.Logger.Success(color.New(color.FgCyan, color.Bold).Sprintf("Local config files are updated successfully."))
 	} else {
-		MacSyncConfig.Logger.Info("Config files already up to date.")
+		MacSyncConfig.Logger.Success("Config files already up to date.")
 	}
 }
