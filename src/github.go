@@ -21,10 +21,16 @@ const GH_BOT_EMAIL = "github-actions[bot] <41898282+github-actions[bot]@users.no
 
 func (github gitHubManipulator) CloneConfigsRepository() string {
 	tempPath, err := os.MkdirTemp("", "mac-sync-config-temp-")
-	Utils.PanicIfErr(err)
+	Utils.FatalIfError(err)
 
 	// Should fully clone repository for commit and push
-	gitCloneArgs := strings.Fields(fmt.Sprintf("git clone https://github.com/%s/%s %s", KeychainPreference.GithubId, KeychainPreference.MacSyncConfigGitRepositoryName, tempPath))
+	gitCloneArgs := strings.Fields(
+		fmt.Sprintf("git clone -b %s --single-branch https://github.com/%s/%s %s",
+			GetGitBranchName(),
+			KeychainPreference.GithubId,
+			KeychainPreference.MacSyncConfigGitRepositoryName,
+			tempPath))
+
 	gitCloneCmd := exec.Command(gitCloneArgs[0], gitCloneArgs[1:]...)
 	output, err := gitCloneCmd.CombinedOutput()
 	Utils.PanicIfErrWithMsg(string(output), err)
@@ -32,8 +38,7 @@ func (github gitHubManipulator) CloneConfigsRepository() string {
 	tempConfigDirPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
 
 	if _, err := os.Stat(tempConfigDirPath); errors.Is(err, os.ErrNotExist) {
-		err = os.Mkdir(tempConfigDirPath, os.ModePerm)
-		Utils.PanicIfErr(err)
+		Utils.FatalIfError(os.Mkdir(tempConfigDirPath, os.ModePerm))
 	}
 
 	return tempPath
@@ -43,23 +48,22 @@ func (github gitHubManipulator) GetRemoteConfigHashId() string {
 	gitLsRemoteArgs := strings.Fields(fmt.Sprintf("git ls-remote https://github.com/%s/%s HEAD", KeychainPreference.GithubId, KeychainPreference.MacSyncConfigGitRepositoryName))
 	gitLsRemoteCmd := exec.Command(gitLsRemoteArgs[0], gitLsRemoteArgs[1:]...)
 	stdout, err := gitLsRemoteCmd.CombinedOutput()
-	Utils.PanicIfErr(err)
+	Utils.FatalIfError(err)
 
 	return strings.TrimSpace(strings.Split(fmt.Sprintf("%s", stdout), "HEAD")[0])
 }
 
 func (github gitHubManipulator) GetMacSyncConfigs() string {
-	// TODO: Might be useful to add branch name as env variable
 	resp, err := req.C().R().
 		SetHeader("Authorization", fmt.Sprintf("token %s", KeychainPreference.GithubToken)).
 		SetHeader("Cache-control", "no-cache").
 		SetPathParam("userName", KeychainPreference.GithubId).
 		SetPathParam("repoName", KeychainPreference.MacSyncConfigGitRepositoryName).
-		SetPathParam("branchName", "main").
+		SetPathParam("branchName", GetGitBranchName()).
 		SetPathParam("fileName", "mac-sync-configs.yaml").
 		EnableDump().
 		Get("https://raw.githubusercontent.com/{userName}/{repoName}/{branchName}/{fileName}")
 
-	Utils.PanicIfErr(err)
+	Utils.FatalIfError(err)
 	return resp.String()
 }

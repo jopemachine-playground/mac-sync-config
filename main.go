@@ -29,7 +29,7 @@ func main() {
 					&cli.BoolFlag{
 						Name:        "overwrite",
 						Aliases:     []string{"o"},
-						Destination: &API.Flag_OverWrite,
+						Destination: &API.Flags.Overwrite,
 					},
 				},
 			},
@@ -45,7 +45,7 @@ func main() {
 					&cli.BoolFlag{
 						Name:        "overwrite",
 						Aliases:     []string{"o"},
-						Destination: &API.Flag_OverWrite,
+						Destination: &API.Flags.Overwrite,
 					},
 				},
 			},
@@ -70,5 +70,5 @@ func main() {
 		},
 	}
 
-	Utils.PanicIfErr(app.Run(os.Args))
+	Utils.FatalIfError(app.Run(os.Args))
 }

@@ -12,7 +12,7 @@ func ScanChar() string {
 	allowedKeys := []string{"y", "n", "p", "q", "d", "e"}
 	for {
 		char, key, err := keyboard.GetSingleKey()
-		PanicIfErr(err)
+		FatalIfError(err)
 
 		response := strings.ToLower(string(char))
 		if key == keyboard.KeyEsc || key == keyboard.KeyCtrlC || response == "q" {

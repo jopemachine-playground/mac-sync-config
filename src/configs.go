@@ -15,23 +15,19 @@ import (
 )
 
 const (
-	PREFERENCE_DIR_PATH = "~/Library/Preferences/Mac-sync-config"
-)
-
-const (
+	PREFERENCE_DIR_PATH   = "~/Library/Preferences/Mac-sync-config"
 	MAC_SYNC_CONFIGS_FILE = "mac-sync-configs.yaml"
 )
 
 var (
 	LocalPreferencePath = strings.Join([]string{PREFERENCE_DIR_PATH, "local-preference.json"}, "/")
+	KeychainPreference  = GetKeychainPreference()
 )
 
 var (
-	KeychainPreference = GetKeychainPreference()
-)
-
-var (
-	Flag_OverWrite = false
+	Flags struct {
+		Overwrite bool
+	}
 )
 
 func GetRemoteConfigFolderName() string {
@@ -83,7 +79,7 @@ func GetKeychainPreference() KeychainPreferenceType {
 	if len(dat) == 0 {
 		scanKeyChainPreference(&config)
 		bytesToWrite, err := json.Marshal(config)
-		Utils.PanicIfErr(err)
+		Utils.FatalIfError(err)
 
 		keyChainItem := keychain.NewItem()
 		keyChainItem.SetSecClass(keychain.SecClassGenericPassword)
@@ -99,11 +95,11 @@ func GetKeychainPreference() KeychainPreferenceType {
 
 		if err == keychain.ErrorDuplicateItem {
 			err = keychain.DeleteItem(keyChainItem)
-			Utils.PanicIfErr(err)
+			Utils.FatalIfError(err)
 			err = keychain.AddItem(keyChainItem)
 		}
 
-		Utils.PanicIfErr(err)
+		Utils.FatalIfError(err)
 
 		Logger.Success(fmt.Sprintf("mac-sync-config's configuration is saved successfully on the keychain.\n"))
 	} else if err != nil {
@@ -131,7 +127,7 @@ func WriteLocalPreference(localPreference map[string]string) {
 	localPreferencePath := RelativePathToAbs(LocalPreferencePath)
 
 	if _, err := os.Stat(localPreferenceDir); errors.Is(err, os.ErrNotExist) {
-		Utils.PanicIfErr(os.MkdirAll(localPreferenceDir, os.ModePerm))
+		Utils.FatalIfError(os.MkdirAll(localPreferenceDir, os.ModePerm))
 	} else if _, err := os.Stat(localPreferencePath); !errors.Is(err, os.ErrNotExist) {
 		os.Remove(localPreferencePath)
 	}
@@ -145,11 +141,18 @@ func ReadMacSyncConfigFile(filepath string) (MacSyncConfigs, error) {
 	}
 
 	dat, err := ioutil.ReadFile(filepath)
-	Utils.PanicIfErr(err)
+	Utils.FatalIfError(err)
 
 	var config MacSyncConfigs
 
-	Utils.PanicIfErr(yaml.Unmarshal(dat, &config))
+	Utils.FatalIfError(yaml.Unmarshal(dat, &config))
 
 	return config, nil
+}
+
+func GetGitBranchName() string {
+	if branchEnv := os.Getenv("MAC_SYNC_CONFIG_BRANCH"); branchEnv != "" {
+		return branchEnv
+	}
+	return "main"
 }

@@ -1,6 +1,14 @@
 package utils
 
-func PanicIfErr(err error) {
+import "log"
+
+func FatalIfError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func PanicIfError(err error) {
 	if err != nil {
 		panic(err)
 	}

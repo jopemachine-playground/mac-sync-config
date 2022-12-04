@@ -35,7 +35,7 @@ func (git gitManipulator) PatchFile(cwd string, filePath string) {
 	gitPatchCmd.Stdin = os.Stdin
 	gitPatchCmd.Stdout = os.Stdout
 	gitPatchCmd.Stderr = os.Stderr
-	Utils.PanicIfErr(gitPatchCmd.Run())
+	Utils.FatalIfError(gitPatchCmd.Run())
 }
 
 func (git gitManipulator) Commit(cwd string) {
@@ -60,12 +60,12 @@ func (git gitManipulator) Commit(cwd string) {
 }
 
 func (git gitManipulator) Push(cwd string) {
-	gitPushArgs := strings.Fields("git push -u origin main --force")
+	gitPushArgs := strings.Fields(fmt.Sprintf("git push -u origin %s --force", GetGitBranchName()))
 	gitPushCmd := exec.Command(gitPushArgs[0], gitPushArgs[1:]...)
 	gitPushCmd.Dir = cwd
 	gitPushCmd.Stdout = os.Stdout
 	gitPushCmd.Stderr = os.Stderr
-	Utils.PanicIfErr(gitPushCmd.Run())
+	Utils.FatalIfError(gitPushCmd.Run())
 	Logger.NewLine()
 }
 
@@ -87,7 +87,7 @@ func (git gitManipulator) ShowDiff(cwd string, filePath string) {
 		gitShowDiffCmd.Run()
 
 		// pipe might be broken, but maybe doesn't matter here.
-		// Utils.PanicIfErr(err)
+		// Utils.FatalIfError(err)
 
 		Logger.NewLine()
 	}

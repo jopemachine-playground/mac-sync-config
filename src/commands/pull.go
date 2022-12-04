@@ -27,7 +27,7 @@ func PullRemoteConfigs(profileName string) {
 	tempConfigsRepoDirPath := MacSyncConfig.Github.CloneConfigsRepository()
 	configs, err := MacSyncConfig.ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempConfigsRepoDirPath, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
 
-	Utils.PanicIfErr(err)
+	Utils.FatalIfError(err)
 
 	configPathsToSync := configs.ConfigPathsToSync
 	selectedFilePaths := []PullPathInfo{}
@@ -66,9 +66,9 @@ func PullRemoteConfigs(profileName string) {
 		remoteConfigFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 		localConfigFilePath := MacSyncConfig.RelativePathToAbs(configPathToSync)
 
-		if MacSyncConfig.Flag_OverWrite {
+		if MacSyncConfig.Flags.Overwrite {
 			if _, err := os.Stat(localConfigFilePath); !errors.Is(err, os.ErrNotExist) {
-				Utils.PanicIfErr(os.RemoveAll(localConfigFilePath))
+				Utils.FatalIfError(os.RemoveAll(localConfigFilePath))
 			}
 
 			selectedFilePaths = append(selectedFilePaths, PullPathInfo{
@@ -110,13 +110,13 @@ func PullRemoteConfigs(profileName string) {
 	for _, path := range selectedFilePaths {
 		MacSyncConfig.Git.Reset(tempConfigsRepoDirPath, path.remoteConfigFilePath)
 		if _, err := os.Stat(path.localConfigFilePath); !errors.Is(err, os.ErrNotExist) {
-			Utils.PanicIfErr(os.RemoveAll(path.localConfigFilePath))
+			Utils.FatalIfError(os.RemoveAll(path.localConfigFilePath))
 		}
 		MacSyncConfig.CopyFiles(path.remoteConfigFilePath, path.localConfigFilePath)
 		MacSyncConfig.Logger.Success(fmt.Sprintf("\"%s\" updated.", path.originalPath))
 	}
 
-	Utils.PanicIfErr(os.RemoveAll(tempConfigsRepoDirPath))
+	Utils.FatalIfError(os.RemoveAll(tempConfigsRepoDirPath))
 
 	if len(selectedFilePaths) > 0 {
 		MacSyncConfig.Logger.Info(color.New(color.FgCyan, color.Bold).Sprintf("Local config files are updated successfully."))

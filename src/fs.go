@@ -19,11 +19,11 @@ func ReadJSON(filePath string) map[string]string {
 	}
 
 	dat, err := ioutil.ReadFile(absPath)
-	Utils.PanicIfErr(err)
+	Utils.FatalIfError(err)
 
 	var jsonData map[string]string
 
-	Utils.PanicIfErr(json.Unmarshal(dat, &jsonData))
+	Utils.FatalIfError(json.Unmarshal(dat, &jsonData))
 
 	return jsonData
 }
@@ -32,9 +32,9 @@ func WriteJSON(filePath string, jsonData map[string]string) {
 	absPath := RelativePathToAbs(filePath)
 
 	bytesToWrite, err := json.Marshal(jsonData)
-	Utils.PanicIfErr(err)
+	Utils.FatalIfError(err)
 
-	Utils.PanicIfErr(ioutil.WriteFile(absPath, bytesToWrite, os.ModePerm))
+	Utils.FatalIfError(ioutil.WriteFile(absPath, bytesToWrite, os.ModePerm))
 }
 
 func EditFile(filePath string) {
@@ -42,7 +42,7 @@ func EditFile(filePath string) {
 	VimCmd.Stdin = os.Stdin
 	VimCmd.Stdout = os.Stdout
 	VimCmd.Stderr = os.Stderr
-	Utils.PanicIfErr(VimCmd.Run())
+	Utils.FatalIfError(VimCmd.Run())
 }
 
 func CopyFiles(srcPath string, dstPath string) {

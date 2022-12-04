@@ -25,7 +25,7 @@ func PushConfigFiles(profileName string) {
 
 	tempConfigsRepoDirPath := MacSyncConfig.Github.CloneConfigsRepository()
 	configs, err := MacSyncConfig.ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempConfigsRepoDirPath, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
-	Utils.PanicIfErr(err)
+	Utils.FatalIfError(err)
 
 	var updatedFilePaths = []PushPathInfo{}
 	var selectedUpdatedFilePaths = []PushPathInfo{}
@@ -39,7 +39,7 @@ func PushConfigFiles(profileName string) {
 		// Delete files for update if the files already exist
 		if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
 			err := os.RemoveAll(dstPath)
-			Utils.PanicIfErr(err)
+			Utils.FatalIfError(err)
 		}
 
 		if _, err := os.Stat(absSrcConfigPathToSync); errors.Is(err, os.ErrNotExist) {
@@ -51,14 +51,14 @@ func PushConfigFiles(profileName string) {
 		}
 
 		MacSyncConfig.CopyFiles(absSrcConfigPathToSync, dstPath)
-		Utils.PanicIfErr(err)
+		Utils.FatalIfError(err)
 
 		if diffExist := MacSyncConfig.Git.IsUpdated(tempConfigsRepoDirPath, dstPath); diffExist {
 			updatedFilePaths = append(updatedFilePaths, PushPathInfo{configPathToSync, dstPath})
 		}
 	}
 
-	if MacSyncConfig.Flag_OverWrite {
+	if MacSyncConfig.Flags.Overwrite {
 		MacSyncConfig.Git.AddAllFiles(tempConfigsRepoDirPath)
 		selectedUpdatedFilePaths = updatedFilePaths
 	} else {
@@ -114,5 +114,5 @@ func PushConfigFiles(profileName string) {
 		MacSyncConfig.Logger.Success("No file pushed.")
 	}
 
-	Utils.PanicIfErr(os.RemoveAll(tempConfigsRepoDirPath))
+	Utils.FatalIfError(os.RemoveAll(tempConfigsRepoDirPath))
 }

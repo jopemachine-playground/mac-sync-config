@@ -11,6 +11,6 @@ func IsRootUser() bool {
 
 func GetMacosUserName() string {
 	user, err := user.Current()
-	PanicIfErr(err)
+	FatalIfError(err)
 	return user.Username
 }
