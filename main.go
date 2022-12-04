@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 
-	API "github.com/jopemachine/mac-sync-config/src"
 	Commands "github.com/jopemachine/mac-sync-config/src/commands"
 	Utils "github.com/jopemachine/mac-sync-config/utils"
 	"github.com/urfave/cli/v2"
@@ -29,7 +28,7 @@ func main() {
 					&cli.BoolFlag{
 						Name:        "overwrite",
 						Aliases:     []string{"o"},
-						Destination: &API.Flags.Overwrite,
+						Destination: &Utils.Flags.Overwrite,
 					},
 				},
 			},
@@ -45,7 +44,7 @@ func main() {
 					&cli.BoolFlag{
 						Name:        "overwrite",
 						Aliases:     []string{"o"},
-						Destination: &API.Flags.Overwrite,
+						Destination: &Utils.Flags.Overwrite,
 					},
 				},
 			},
@@ -66,6 +65,12 @@ func main() {
 					Commands.SwitchProfile(cliContext.Args().First())
 					return nil
 				},
+			},
+		},
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:        "debug",
+				Destination: &Utils.Flags.UsePanic,
 			},
 		},
 	}

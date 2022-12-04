@@ -64,7 +64,7 @@ func PullRemoteConfigs(profileName string) {
 		remoteConfigFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 		localConfigFilePath := MacSyncConfig.RelativePathToAbs(configPathToSync)
 
-		if MacSyncConfig.Flags.Overwrite {
+		if Utils.Flags.Overwrite {
 			selectedFilePaths = append(selectedFilePaths, PullPathInfo{
 				configPathToSync,
 				remoteConfigFilePath,

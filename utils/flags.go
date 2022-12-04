@@ -1,7 +1,8 @@
-package src
+package utils
 
 var (
 	Flags struct {
 		Overwrite bool
+		UsePanic  bool
 	}
 )

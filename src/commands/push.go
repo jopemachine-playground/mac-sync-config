@@ -50,7 +50,7 @@ func PushConfigFiles(profileName string) {
 		}
 	}
 
-	if MacSyncConfig.Flags.Overwrite {
+	if Utils.Flags.Overwrite {
 		MacSyncConfig.Git.AddAllFiles(tempConfigsRepoDirPath)
 		selectedUpdatedFilePaths = updatedFilePaths
 	} else {
