@@ -81,9 +81,9 @@ func PushConfigFiles(profileName string) {
 				MacSyncConfig.EditFile(updatedFilePath.absPath)
 			} else if userResp == Utils.QUESTION_RESULT_PATCH {
 				MacSyncConfig.Git.PatchFile(tempConfigsRepoDirPath, updatedFilePath.absPath)
-				partiallyPatched = true
 				MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP_MSG)
 				Utils.WaitResponse()
+				partiallyPatched = true
 			} else if userResp == Utils.QUESTION_RESULT_IGNORE {
 				shouldAdd = false
 			}
