@@ -75,9 +75,8 @@ func (git gitManipulator) ShowDiff(cwd string, filePath string) {
 	checkDiffCmd.Dir = cwd
 	checkDiffCmd.Stdout = os.Stdout
 	checkDiffCmd.Stderr = os.Stderr
-	err := checkDiffCmd.Run()
 
-	if err == nil {
+	if err := checkDiffCmd.Run(); err == nil {
 		Logger.Info("No diff to show")
 	} else {
 		gitShowDiffCmd := exec.Command("git", "diff", filePath)

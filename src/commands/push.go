@@ -62,8 +62,8 @@ func PushConfigFiles(profileName string) {
 		MacSyncConfig.Git.AddAllFiles(tempConfigsRepoDirPath)
 		selectedUpdatedFilePaths = updatedFilePaths
 	} else {
-		for fileIdx, updatedFilePath := range updatedFilePaths {
-			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", fileIdx+1, len(updatedFilePaths)))
+		for updatedFileIdx, updatedFilePath := range updatedFilePaths {
+			progressStr := color.GreenString(fmt.Sprintf("[%d/%d]", updatedFileIdx+1, len(updatedFilePaths)))
 			MacSyncConfig.Logger.Info(color.New(color.Bold).Sprintf(
 				fmt.Sprintf("%s %s", progressStr, color.MagentaString(path.Base(updatedFilePath.absPath)))))
 
@@ -82,6 +82,8 @@ func PushConfigFiles(profileName string) {
 			} else if userResp == Utils.QUESTION_RESULT_PATCH {
 				MacSyncConfig.Git.PatchFile(tempConfigsRepoDirPath, updatedFilePath.absPath)
 				partiallyPatched = true
+				MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP_MSG)
+				Utils.WaitResponse()
 			} else if userResp == Utils.QUESTION_RESULT_IGNORE {
 				shouldAdd = false
 			}

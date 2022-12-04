@@ -15,8 +15,8 @@ func GetUserProfile() string {
 		return userProfileEnv
 	}
 
-	if userProfile := ReadLocalPreference()["profile"]; userProfile != "" {
-		return userProfile
+	if localConfigUserProfile := ReadLocalPreference()["profile"]; localConfigUserProfile != "" {
+		return localConfigUserProfile
 	}
 
 	return "DEFAULT_USER_PROFILE"
