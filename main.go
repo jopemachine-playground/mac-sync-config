@@ -10,11 +10,12 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name:      "mac-sync-config",
-		Usage:     "Sync your config files between macs through your Github repository.",
-		UsageText: "mac-sync-config command [command options] [arguments...]",
-		Version:   "0.1.0",
-		Suggest:   true,
+		Name:            "mac-sync-config",
+		Usage:           "Sync your config files between macs through your Github repository.",
+		UsageText:       "mac-sync-config command [command options] [arguments...]",
+		Version:         "0.1.0",
+		Suggest:         true,
+		HideHelpCommand: true,
 		Commands: []*cli.Command{
 			{
 				Name:      "push",
@@ -88,7 +89,7 @@ func main() {
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:        "debug",
-				Usage:       "Use panic instead of log.Fatal to see stacktrace",
+				Usage:       "use panic instead of log.Fatal to show stacktrace",
 				Destination: &Utils.Flags.UsePanic,
 			},
 		},

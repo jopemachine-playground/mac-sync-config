@@ -44,10 +44,6 @@ func PullRemoteConfigs(profileName string) {
 		}
 
 		if _, err := os.Stat(remoteConfigFilePath); errors.Is(err, os.ErrNotExist) {
-			MacSyncConfig.Logger.Warning(fmt.Sprintf("\"%s\" is specified on your \"%s\", but the config file is not found on the remote repository.", configPathToSync, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
-			MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP_MSG)
-			Utils.WaitResponse()
-			MacSyncConfig.Logger.ClearConsole()
 			continue
 		}
 
@@ -90,7 +86,7 @@ func PullRemoteConfigs(profileName string) {
 				MacSyncConfig.EditFile(remoteConfigFilePath)
 			} else if userResp == Utils.QUESTION_RESULT_SHOW_DIFF {
 				MacSyncConfig.Git.ShowDiff(tempConfigsRepoDirPath, remoteConfigFilePath)
-				MacSyncConfig.Logger.Log(MacSyncConfig.PRESS_ANYKEY_HELP_MSG)
+				MacSyncConfig.Logger.Log("Press \"y\" to apply the diffs or \"n\" to ignore it.")
 				shouldAdd = Utils.MakeYesNoQuestion()
 			} else if userResp == Utils.QUESTION_RESULT_IGNORE {
 				shouldAdd = false

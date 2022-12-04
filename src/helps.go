@@ -12,4 +12,4 @@ Press 'p' for patching.
 Press 'e' to edit the file before pushing.
 Press 'q' to quit.`
 
-const PRESS_ANYKEY_HELP_MSG = `Press any key to continue.`
+const PRESS_ANYKEY_HELP_MSG = "Press any key to continue."
