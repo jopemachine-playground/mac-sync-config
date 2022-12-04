@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/fatih/color"
 	MacSyncConfig "github.com/jopemachine/mac-sync-config/src"
@@ -40,7 +39,7 @@ func PullRemoteConfigs(profileName string) {
 		remoteConfigFilePath := fmt.Sprintf("%s%s", configRootPath, absConfigPathToSync)
 		localConfigFilePath := MacSyncConfig.RelativePathToAbs(configPathToSync)
 
-		if Utils.Flags.FileNameFilter != "" && !strings.Contains(path.Base(configPathToSync), Utils.Flags.FileNameFilter) {
+		if Utils.Flags.FileNameFilter != "" && !Utils.SubStringContains(path.Base(configPathToSync), Utils.Flags.FileNameFilter) {
 			continue
 		}
 

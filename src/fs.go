@@ -54,7 +54,12 @@ func CopyFiles(srcPath string, dstPath string) {
 	_, err := mkdirCmd.CombinedOutput()
 	Utils.FatalExitIfError(err)
 
-	cpCmd := exec.Command("cp", "-fR", srcPath, dstPath)
+	// a: Archive mode. Preserves structure and attributes of files but not directory structure.
+	// f: If the destination file cannot be opened, remove it and create a new file.
+	// R: If source_file designates a directory, cp copies the directory and the entire subtree connected at that point.
+	// H: Symbolic links on the command line are followed.
+	// L: All symbolic links are followed.
+	cpCmd := exec.Command("cp", "-afRHL", srcPath, dstPath)
 	_, err = cpCmd.CombinedOutput()
 	Utils.FatalExitIfError(err)
 }
