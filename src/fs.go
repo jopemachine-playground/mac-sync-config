@@ -50,9 +50,7 @@ func CopyFiles(srcPath string, dstPath string) {
 		Utils.FatalExitIfError(os.RemoveAll(dstPath))
 	}
 
-	dirPath := filepath.Dir(dstPath)
-
-	mkdirCmd := exec.Command("mkdir", "-p", dirPath)
+	mkdirCmd := exec.Command("mkdir", "-p", filepath.Dir(dstPath))
 	_, err := mkdirCmd.CombinedOutput()
 	Utils.FatalExitIfError(err)
 

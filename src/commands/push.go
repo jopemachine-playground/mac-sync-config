@@ -24,23 +24,16 @@ func PushConfigFiles(profileName string) {
 	MacSyncConfig.Logger.ClearConsole()
 
 	tempConfigsRepoDirPath := MacSyncConfig.Github.CloneConfigsRepository()
-	configs, err := MacSyncConfig.ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempConfigsRepoDirPath, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
-	Utils.FatalExitIfError(err)
+	macSyncConfigs := MacSyncConfig.ReadMacSyncConfigFile(fmt.Sprintf("%s/%s", tempConfigsRepoDirPath, MacSyncConfig.MAC_SYNC_CONFIGS_FILE))
 
 	var updatedFilePaths = []PushPathInfo{}
 	var selectedUpdatedFilePaths = []PushPathInfo{}
 
-	for _, configPathToSync := range configs.ConfigPathsToSync {
+	for _, configPathToSync := range macSyncConfigs.ConfigPathsToSync {
 		configRootPath := fmt.Sprintf("%s/%s", tempConfigsRepoDirPath, MacSyncConfig.GetRemoteConfigFolderName())
 		absSrcConfigPathToSync := MacSyncConfig.RelativePathToAbs(configPathToSync)
 
 		dstPath := fmt.Sprintf("%s%s", configRootPath, MacSyncConfig.ReplaceMacOSUserName(MacSyncConfig.RelativePathToAbs(configPathToSync)))
-
-		// Delete files for update if the files already exist
-		if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
-			err := os.RemoveAll(dstPath)
-			Utils.FatalExitIfError(err)
-		}
 
 		if _, err := os.Stat(absSrcConfigPathToSync); errors.Is(err, os.ErrNotExist) {
 			MacSyncConfig.Logger.Warning(fmt.Sprintf("\"%s\" not found in the local computer.", configPathToSync))
@@ -51,7 +44,6 @@ func PushConfigFiles(profileName string) {
 		}
 
 		MacSyncConfig.CopyFiles(absSrcConfigPathToSync, dstPath)
-		Utils.FatalExitIfError(err)
 
 		if diffExist := MacSyncConfig.Git.IsUpdated(tempConfigsRepoDirPath, dstPath); diffExist {
 			updatedFilePaths = append(updatedFilePaths, PushPathInfo{configPathToSync, dstPath})
