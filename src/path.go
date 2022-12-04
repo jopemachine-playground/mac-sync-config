@@ -2,7 +2,6 @@ package src
 
 import (
 	"fmt"
-	"os"
 	"os/user"
 	"path/filepath"
 	"strings"
@@ -10,21 +9,9 @@ import (
 	Utils "github.com/jopemachine/mac-sync-config/utils"
 )
 
-func GetUserProfile() string {
-	if userProfileEnv := os.Getenv("MAC_SYNC_CONFIG_USER_PROFILE"); userProfileEnv != "" {
-		return userProfileEnv
-	}
-
-	if localConfigUserProfile := ReadLocalPreference()["profile"]; localConfigUserProfile != "" {
-		return localConfigUserProfile
-	}
-
-	return "DEFAULT_USER_PROFILE"
-}
-
 func ReplaceMacOSUserName(path string) string {
 	if strings.HasPrefix(path, "/Users/") {
-		return strings.Replace(path, fmt.Sprintf("/Users/%s", Utils.GetMacosUserName()), fmt.Sprintf("/Users/%s", GetUserProfile()), 1)
+		return strings.Replace(path, fmt.Sprintf("/Users/%s", Utils.GetMacosUserName()), fmt.Sprintf("/Users/%s", GetProfileName()), 1)
 	}
 
 	return path

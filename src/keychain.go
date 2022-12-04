@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/keybase/go-keychain"
@@ -75,7 +74,7 @@ func GetKeychainPreference() KeychainPreferenceType {
 
 		Logger.Success(fmt.Sprintf("mac-sync-config's configuration is saved successfully on the keychain.\n"))
 	} else if err != nil {
-		log.Fatal(err)
+		Utils.FatalExitIfError(err)
 	} else {
 		if json.Unmarshal(dat, &config); err != nil {
 			Logger.Error("JSON data seems to be malformed or outdated.\nPress \"y\" to enter new information or press \"n\" to ignore it.")

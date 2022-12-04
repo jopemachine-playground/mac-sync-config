@@ -16,3 +16,15 @@ func GetGitBranchName() string {
 	}
 	return "main"
 }
+
+func GetProfileName() string {
+	if profileEnv := os.Getenv("MAC_SYNC_CONFIG_PROFILE"); profileEnv != "" {
+		return profileEnv
+	}
+
+	if profilePreference := ReadLocalPreference()["profile"]; profilePreference != "" {
+		return profilePreference
+	}
+
+	return "DEFAULT_USER_PROFILE"
+}

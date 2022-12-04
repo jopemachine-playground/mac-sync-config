@@ -18,7 +18,7 @@ type PushPathInfo struct {
 
 func PushConfigFiles(profileName string) {
 	if profileName != "" {
-		os.Setenv("MAC_SYNC_CONFIG_USER_PROFILE", profileName)
+		os.Setenv("MAC_SYNC_CONFIG_PROFILE", profileName)
 	}
 
 	MacSyncConfig.Logger.ClearConsole()
