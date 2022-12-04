@@ -1,7 +1,9 @@
 # mac-sync-config
 
-<img src="https://img.shields.io/github/license/jopemachine/mac-sync-config.svg" alt="License">
-<img src="https://goreportcard.com/badge/github.com/jopemachine/mac-sync-config" alt="goreportcard">
+<p>
+	<img src="https://img.shields.io/github/license/jopemachine/mac-sync-config.svg" alt="License">
+	<img src="https://goreportcard.com/badge/github.com/jopemachine/mac-sync-config" alt="goreportcard">
+</p>
 
 Sync your config files between macs through your Github repository.
 
