@@ -18,15 +18,15 @@ var (
 func (git gitManipulator) AddAllFiles(cwd string) {
 	gitAddAllCmd := exec.Command("git", "add", cwd)
 	gitAddAllCmd.Dir = cwd
-	output, err := gitAddAllCmd.CombinedOutput()
-	Utils.PanicIfErrWithMsg(string(output), err)
+	_, err := gitAddAllCmd.CombinedOutput()
+	Utils.FatalExitIfError(err)
 }
 
 func (git gitManipulator) AddFile(cwd string, filePath string) {
 	gitAddFileCmd := exec.Command("git", "add", filePath)
 	gitAddFileCmd.Dir = cwd
-	output, err := gitAddFileCmd.CombinedOutput()
-	Utils.PanicIfErrWithMsg(string(output), err)
+	_, err := gitAddFileCmd.CombinedOutput()
+	Utils.FatalExitIfError(err)
 }
 
 func (git gitManipulator) PatchFile(cwd string, filePath string) {
@@ -95,8 +95,8 @@ func (git gitManipulator) ShowDiff(cwd string, filePath string) {
 func (git gitManipulator) Reset(cwd string, filePath string) {
 	gitResetCmd := exec.Command("git", "checkout", "--", filePath)
 	gitResetCmd.Dir = cwd
-	output, err := gitResetCmd.CombinedOutput()
-	Utils.PanicIfErrWithMsg(string(output), err)
+	_, err := gitResetCmd.CombinedOutput()
+	Utils.FatalExitIfError(err)
 }
 
 // TODO: Below command does not handle binary file properly.
@@ -106,7 +106,7 @@ func (git gitManipulator) IsUpdated(cwd string, filePath string) bool {
 	output, err := gitStatusCmd.CombinedOutput()
 	outputStr := string(output)
 
-	Utils.PanicIfErrWithMsg(outputStr, err)
+	Utils.FatalExitIfError(err)
 
 	return len(outputStr) != 0
 }

@@ -53,10 +53,10 @@ func CopyFiles(srcPath string, dstPath string) {
 	dirPath := filepath.Dir(dstPath)
 
 	mkdirCmd := exec.Command("mkdir", "-p", dirPath)
-	output, err := mkdirCmd.CombinedOutput()
-	Utils.PanicIfErrWithMsg(string(output), err)
+	_, err := mkdirCmd.CombinedOutput()
+	Utils.FatalExitIfError(err)
 
 	cpCmd := exec.Command("cp", "-fR", srcPath, dstPath)
-	output, err = cpCmd.CombinedOutput()
-	Utils.PanicIfErrWithMsg(string(output), err)
+	_, err = cpCmd.CombinedOutput()
+	Utils.FatalExitIfError(err)
 }

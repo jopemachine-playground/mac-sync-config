@@ -32,8 +32,8 @@ func (github gitHubManipulator) CloneConfigsRepository() string {
 			tempPath))
 
 	gitCloneCmd := exec.Command(gitCloneArgs[0], gitCloneArgs[1:]...)
-	output, err := gitCloneCmd.CombinedOutput()
-	Utils.PanicIfErrWithMsg(string(output), err)
+	_, err = gitCloneCmd.CombinedOutput()
+	Utils.FatalExitIfError(err)
 
 	tempConfigDirPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
 

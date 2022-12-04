@@ -13,9 +13,3 @@ func PanicIfError(err error) {
 		panic(err)
 	}
 }
-
-func PanicIfErrWithMsg(output string, err error) {
-	if err != nil {
-		panic(output)
-	}
-}
