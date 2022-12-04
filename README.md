@@ -18,6 +18,13 @@ I made this for resolving the [keeping the consistent configs issue](https://app
 
 - Easy to Edit your config files in your local, Github directly.
 
+## Installation
+
+```
+$ brew tap jopemachine/mac-sync-config
+$ brew install mac-sync-config
+```
+
 ## How to set up
 
 1. Create a repository for `mac-sync-config` through your Github account.
