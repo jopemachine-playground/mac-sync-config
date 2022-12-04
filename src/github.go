@@ -21,7 +21,7 @@ const GH_BOT_EMAIL = "github-actions[bot] <41898282+github-actions[bot]@users.no
 
 func (github gitHubManipulator) CloneConfigsRepository() string {
 	tempPath, err := os.MkdirTemp("", "mac-sync-config-temp-")
-	Utils.FatalIfError(err)
+	Utils.FatalExitIfError(err)
 
 	// Should fully clone repository for commit and push
 	gitCloneArgs := strings.Fields(
@@ -38,7 +38,7 @@ func (github gitHubManipulator) CloneConfigsRepository() string {
 	tempConfigDirPath := fmt.Sprintf("%s/%s", tempPath, GetRemoteConfigFolderName())
 
 	if _, err := os.Stat(tempConfigDirPath); errors.Is(err, os.ErrNotExist) {
-		Utils.FatalIfError(os.Mkdir(tempConfigDirPath, os.ModePerm))
+		Utils.FatalExitIfError(os.Mkdir(tempConfigDirPath, os.ModePerm))
 	}
 
 	return tempPath
@@ -48,7 +48,7 @@ func (github gitHubManipulator) GetRemoteConfigHashId() string {
 	gitLsRemoteArgs := strings.Fields(fmt.Sprintf("git ls-remote https://github.com/%s/%s HEAD", KeychainPreference.GithubId, KeychainPreference.MacSyncConfigGitRepositoryName))
 	gitLsRemoteCmd := exec.Command(gitLsRemoteArgs[0], gitLsRemoteArgs[1:]...)
 	stdout, err := gitLsRemoteCmd.CombinedOutput()
-	Utils.FatalIfError(err)
+	Utils.FatalExitIfError(err)
 
 	return strings.TrimSpace(strings.Split(fmt.Sprintf("%s", stdout), "HEAD")[0])
 }
@@ -64,6 +64,6 @@ func (github gitHubManipulator) GetMacSyncConfigs() string {
 		EnableDump().
 		Get("https://raw.githubusercontent.com/{userName}/{repoName}/{branchName}/{fileName}")
 
-	Utils.FatalIfError(err)
+	Utils.FatalExitIfError(err)
 	return resp.String()
 }

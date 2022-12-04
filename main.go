@@ -70,5 +70,5 @@ func main() {
 		},
 	}
 
-	Utils.FatalIfError(app.Run(os.Args))
+	Utils.FatalExitIfError(app.Run(os.Args))
 }

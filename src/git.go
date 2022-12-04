@@ -35,7 +35,7 @@ func (git gitManipulator) PatchFile(cwd string, filePath string) {
 	gitPatchCmd.Stdin = os.Stdin
 	gitPatchCmd.Stdout = os.Stdout
 	gitPatchCmd.Stderr = os.Stderr
-	Utils.FatalIfError(gitPatchCmd.Run())
+	Utils.FatalExitIfError(gitPatchCmd.Run())
 }
 
 func (git gitManipulator) Commit(cwd string) {
@@ -65,7 +65,7 @@ func (git gitManipulator) Push(cwd string) {
 	gitPushCmd.Dir = cwd
 	gitPushCmd.Stdout = os.Stdout
 	gitPushCmd.Stderr = os.Stderr
-	Utils.FatalIfError(gitPushCmd.Run())
+	Utils.FatalExitIfError(gitPushCmd.Run())
 	Logger.NewLine()
 }
 
@@ -87,7 +87,7 @@ func (git gitManipulator) ShowDiff(cwd string, filePath string) {
 		gitShowDiffCmd.Run()
 
 		// pipe might be broken, but maybe doesn't matter here.
-		// Utils.FatalIfError(err)
+		// Utils.FatalExitIfError(err)
 
 		Logger.NewLine()
 	}

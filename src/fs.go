@@ -19,11 +19,11 @@ func ReadJSON(filePath string) map[string]string {
 	}
 
 	dat, err := ioutil.ReadFile(absPath)
-	Utils.FatalIfError(err)
+	Utils.FatalExitIfError(err)
 
 	var jsonData map[string]string
 
-	Utils.FatalIfError(json.Unmarshal(dat, &jsonData))
+	Utils.FatalExitIfError(json.Unmarshal(dat, &jsonData))
 
 	return jsonData
 }
@@ -32,9 +32,9 @@ func WriteJSON(filePath string, jsonData map[string]string) {
 	absPath := RelativePathToAbs(filePath)
 
 	bytesToWrite, err := json.Marshal(jsonData)
-	Utils.FatalIfError(err)
+	Utils.FatalExitIfError(err)
 
-	Utils.FatalIfError(ioutil.WriteFile(absPath, bytesToWrite, os.ModePerm))
+	Utils.FatalExitIfError(ioutil.WriteFile(absPath, bytesToWrite, os.ModePerm))
 }
 
 func EditFile(filePath string) {
@@ -42,10 +42,14 @@ func EditFile(filePath string) {
 	VimCmd.Stdin = os.Stdin
 	VimCmd.Stdout = os.Stdout
 	VimCmd.Stderr = os.Stderr
-	Utils.FatalIfError(VimCmd.Run())
+	Utils.FatalExitIfError(VimCmd.Run())
 }
 
 func CopyFiles(srcPath string, dstPath string) {
+	if _, err := os.Stat(dstPath); !errors.Is(err, os.ErrNotExist) {
+		Utils.FatalExitIfError(os.RemoveAll(dstPath))
+	}
+
 	dirPath := filepath.Dir(dstPath)
 
 	mkdirCmd := exec.Command("mkdir", "-p", dirPath)

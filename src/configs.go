@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 
@@ -36,6 +37,13 @@ func GetRemoteConfigFolderName() string {
 	}
 
 	return ".mac-sync-configs"
+}
+
+func GetGitBranchName() string {
+	if branchEnv := os.Getenv("MAC_SYNC_CONFIG_BRANCH"); branchEnv != "" {
+		return branchEnv
+	}
+	return "main"
 }
 
 type MacSyncConfigs struct {
@@ -79,7 +87,7 @@ func GetKeychainPreference() KeychainPreferenceType {
 	if len(dat) == 0 {
 		scanKeyChainPreference(&config)
 		bytesToWrite, err := json.Marshal(config)
-		Utils.FatalIfError(err)
+		Utils.FatalExitIfError(err)
 
 		keyChainItem := keychain.NewItem()
 		keyChainItem.SetSecClass(keychain.SecClassGenericPassword)
@@ -95,15 +103,15 @@ func GetKeychainPreference() KeychainPreferenceType {
 
 		if err == keychain.ErrorDuplicateItem {
 			err = keychain.DeleteItem(keyChainItem)
-			Utils.FatalIfError(err)
+			Utils.FatalExitIfError(err)
 			err = keychain.AddItem(keyChainItem)
 		}
 
-		Utils.FatalIfError(err)
+		Utils.FatalExitIfError(err)
 
 		Logger.Success(fmt.Sprintf("mac-sync-config's configuration is saved successfully on the keychain.\n"))
 	} else if err != nil {
-		panic(err)
+		log.Fatal(err)
 	} else {
 		if json.Unmarshal(dat, &config); err != nil {
 			Logger.Error("JSON data seems to be malformed or outdated.\nPress \"y\" to enter new information or press \"n\" to ignore it.")
@@ -127,7 +135,7 @@ func WriteLocalPreference(localPreference map[string]string) {
 	localPreferencePath := RelativePathToAbs(LocalPreferencePath)
 
 	if _, err := os.Stat(localPreferenceDir); errors.Is(err, os.ErrNotExist) {
-		Utils.FatalIfError(os.MkdirAll(localPreferenceDir, os.ModePerm))
+		Utils.FatalExitIfError(os.MkdirAll(localPreferenceDir, os.ModePerm))
 	} else if _, err := os.Stat(localPreferencePath); !errors.Is(err, os.ErrNotExist) {
 		os.Remove(localPreferencePath)
 	}
@@ -141,18 +149,11 @@ func ReadMacSyncConfigFile(filepath string) (MacSyncConfigs, error) {
 	}
 
 	dat, err := ioutil.ReadFile(filepath)
-	Utils.FatalIfError(err)
+	Utils.FatalExitIfError(err)
 
 	var config MacSyncConfigs
 
-	Utils.FatalIfError(yaml.Unmarshal(dat, &config))
+	Utils.FatalExitIfError(yaml.Unmarshal(dat, &config))
 
 	return config, nil
-}
-
-func GetGitBranchName() string {
-	if branchEnv := os.Getenv("MAC_SYNC_CONFIG_BRANCH"); branchEnv != "" {
-		return branchEnv
-	}
-	return "main"
 }
