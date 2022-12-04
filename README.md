@@ -72,7 +72,14 @@ COMMANDS:
    push                     Push the local config files to the remote repository
    pull                     Pull the config files from the remote repository
    list, ls                 Show the configuration files list
-   switch-profile, profile  Switch the profile. This could be useful when you need to the configuration set
+   switch-profile, profile  Change default profile. This could be useful when you need to the configuration set
+   delete-keychain          Delete keychain configurations
+   help, h                  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --debug        Use panic instead of log.Fatal to see stacktrace (default: false)
+   --help, -h     show help (default: false)
+   --version, -v  print the version (default: false)
 ```
 
 ## `mac-sync-configs` Example
